@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -55,8 +56,12 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.3.0")
     implementation("androidx.camera:camera-view:1.3.0")
 
-    // Přidáno: Material Icons Extended (obsahuje více ikon)
+    // Přidáno: Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended:1.3.1")
+
+    // ML Kit pro Image Labeling
+    implementation("com.google.mlkit:image-labeling:17.0.7")
+    implementation("com.google.mlkit:vision-common:17.3.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -66,4 +71,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
 
