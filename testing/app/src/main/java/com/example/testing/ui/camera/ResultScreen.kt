@@ -12,24 +12,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.testing.ui.components.TopBarWithMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(
-    detectedLabels: List<String>,
-    onBack: () -> Unit
+    navController: NavController,
+    detectedLabels: List<String>
 ) {
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Detected Results") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
+        topBar = { TopBarWithMenu(navController, title = "Results") },
     ) { paddingValues ->
         Column(
             modifier = Modifier

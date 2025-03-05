@@ -64,8 +64,8 @@ class MainActivity : ComponentActivity() {
                             val labelsString = backStackEntry.arguments?.getString("detectedLabels") ?: ""
                             val labels = if (labelsString.isNotEmpty()) labelsString.split("|") else emptyList()
                             ResultScreen(
-                                detectedLabels = labels,
-                                onBack = { navController.popBackStack() }
+                                navController = navController,
+                                detectedLabels = labels
                             )
                         }
                         composable("visual_settings") {
