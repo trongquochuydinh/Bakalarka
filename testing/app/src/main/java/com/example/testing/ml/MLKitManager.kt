@@ -7,6 +7,9 @@ class MLKitManager {
 
     // Můžeme zde přidat další ML procesory (např. FaceDetectionProcessor)
     private val imageLabelingProcessor = ImageLabelingProcessor()
+    private val objectDetectionProcessor = ObjectDetectionProcessor()
+    private val subjectSegmentationProcessor = SubjectSegmentationProcessor()
+
 
     // Vybere správný procesor na základě zvoleného typu
     fun processImage(
@@ -17,12 +20,14 @@ class MLKitManager {
     ) {
         when (processorType) {
             ProcessorType.IMAGE_LABELING -> imageLabelingProcessor.processImage(context, imageUri, onResult)
-            // Přidáme další případy (např. ProcessorType.FACE_DETECTION)
+            ProcessorType.OBJECT_DETECTION -> objectDetectionProcessor.processImage(context, imageUri, onResult)
+            ProcessorType.SUBJECT_SEGMENTATION -> subjectSegmentationProcessor.processImage(context, imageUri, onResult)
         }
     }
 
     enum class ProcessorType {
-        IMAGE_LABELING
-        // Přidáme další typy (např. FACE_DETECTION, OBJECT_DETECTION atd.)
+        IMAGE_LABELING,
+        OBJECT_DETECTION,
+        SUBJECT_SEGMENTATION
     }
 }
