@@ -18,7 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.testing.ui.camera.CameraScreen
-import com.example.testing.ui.camera.ResultScreen
+import com.example.testing.ui.results.ImageLabelingResultScreen
 import com.example.testing.ui.results.ObjectDetectionResultScreen
 import com.example.testing.ui.settings.VisualSettingsScreen
 import com.example.testing.ui.settings.ModelSettingsScreen
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
                         composable("results/{detectedLabels}") { backStackEntry ->
                             val labelsString = backStackEntry.arguments?.getString("detectedLabels") ?: ""
                             val labels = if (labelsString.isNotEmpty()) labelsString.split("|") else emptyList()
-                            ResultScreen(
+                            ImageLabelingResultScreen(
                                 navController = navController,
                                 detectedLabels = labels
                             )
