@@ -74,22 +74,23 @@ fun CameraScreen(
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Button(
                             onClick = {
+// Inside CameraScreen.kt (snippet)
                                 cameraManager.takePhoto(cameraExecutor) { uri ->
                                     uri?.let {
-                                        // Determine processor type based on selected model
                                         val processorType = when (selectedModel) {
                                             "Image Labeling" -> MLKitManager.ProcessorType.IMAGE_LABELING
                                             "Object Detection" -> MLKitManager.ProcessorType.OBJECT_DETECTION
                                             else -> MLKitManager.ProcessorType.IMAGE_LABELING
                                         }
-
-                                        mlKitManager.processImage(
-                                            context,
-                                            it,
-                                            processorType
-                                        ) { labels ->
-                                            detectedLabels = labels
-                                            onResults(labels)
+                                        mlKitManager.processImage(context, it, processorType) { labels ->
+                                            if (selectedModel == "Object Detection") {
+                                                val encodedResults = Uri.encode(labels.joinToString("|"))
+                                                val encodedImageUri = Uri.encode(it.toString())
+                                                navController.navigate("object_detection_results/$encodedResults/$encodedImageUri")
+                                            } else {
+                                                val encodedResults = Uri.encode(labels.joinToString("|"))
+                                                navController.navigate("results/$encodedResults")
+                                            }
                                         }
                                     }
                                 }

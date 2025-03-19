@@ -51,6 +51,9 @@ dependencies {
     implementation(libs.androidx.material3)
 
     implementation("androidx.compose.runtime:runtime-saveable:1.5.4")
+    implementation("androidx.compose.material3:material3:1.0.1")
+    implementation("androidx.compose.ui:ui:1.3.0")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.3.0")
 
     // DataStore (For saving theme preference across app restarts)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
@@ -68,7 +71,12 @@ dependencies {
 
     // ML Kit pro Image Labeling
     implementation("com.google.mlkit:image-labeling:17.0.7")
+
+    implementation("com.google.mlkit:object-detection:17.0.2")
     implementation("com.google.mlkit:vision-common:17.3.0")
+
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.2.2")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

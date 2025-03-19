@@ -19,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.testing.ui.camera.CameraScreen
 import com.example.testing.ui.camera.ResultScreen
+import com.example.testing.ui.results.ObjectDetectionResultScreen
 import com.example.testing.ui.settings.VisualSettingsScreen
 import com.example.testing.ui.settings.ModelSettingsScreen
 import com.example.testing.ui.theme.TestingTheme
@@ -66,6 +67,17 @@ class MainActivity : ComponentActivity() {
                             ResultScreen(
                                 navController = navController,
                                 detectedLabels = labels
+                            )
+                        }
+                        // In MainActivity.kt, inside your NavHost declaration:
+                        composable("object_detection_results/{detectedResults}/{imageUri}") { backStackEntry ->
+                            val resultsString = backStackEntry.arguments?.getString("detectedResults") ?: ""
+                            val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
+                            val results = if (resultsString.isNotEmpty()) resultsString.split("|") else emptyList()
+                            ObjectDetectionResultScreen(
+                                navController = navController,
+                                imageUri = imageUri,
+                                detectionResults = results
                             )
                         }
                         composable("visual_settings") {
