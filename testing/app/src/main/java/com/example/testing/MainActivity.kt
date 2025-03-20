@@ -20,6 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.testing.ui.camera.CameraScreen
 import com.example.testing.ui.results.ImageLabelingResultScreen
 import com.example.testing.ui.results.ObjectDetectionResultScreen
+import com.example.testing.ui.results.TextRecognitionResultScreen
 import com.example.testing.ui.settings.VisualSettingsScreen
 import com.example.testing.ui.settings.ModelSettingsScreen
 import com.example.testing.ui.theme.TestingTheme
@@ -80,6 +81,17 @@ class MainActivity : ComponentActivity() {
                                 detectionResults = results
                             )
                         }
+                        composable("text_recognition_results/{detectedResults}/{imageUri}") { backStackEntry ->
+                            val resultsString = backStackEntry.arguments?.getString("detectedResults") ?: ""
+                            val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
+                            val results = if (resultsString.isNotEmpty()) resultsString.split("|") else emptyList()
+                            TextRecognitionResultScreen(
+                                navController = navController,
+                                imageUri = imageUri,
+                                detectedResults = results
+                            )
+                        }
+
                         composable("visual_settings") {
                             VisualSettingsScreen(navController, isDarkTheme) { newTheme ->
                                 isDarkTheme = newTheme

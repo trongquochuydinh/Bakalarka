@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.testing.ui.components.TopBarWithMenu
 
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -73,16 +74,7 @@ fun ObjectDetectionResultScreen(
     val painter = rememberAsyncImagePainter(model = imageUri)
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Object Detection Results") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
+        topBar = { TopBarWithMenu(navController, title = "Object Detection Results") },
     ) { paddingValues ->
         // BoxWithConstraints lets you get maxWidth easily.
         BoxWithConstraints(
