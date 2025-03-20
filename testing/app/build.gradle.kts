@@ -73,6 +73,21 @@ dependencies {
     implementation("com.google.mlkit:image-labeling:17.0.7")
 
     implementation("com.google.mlkit:object-detection:17.0.2")
+
+    // To recognize Latin script
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+
+    // To recognize Chinese script
+    implementation("com.google.mlkit:text-recognition-chinese:16.0.1")
+
+    // To recognize Devanagari script
+    implementation("com.google.mlkit:text-recognition-devanagari:16.0.1")
+
+    // To recognize Japanese script
+    implementation("com.google.mlkit:text-recognition-japanese:16.0.1")
+
+    // To recognize Korean script
+    implementation("com.google.mlkit:text-recognition-korean:16.0.1")
     implementation("com.google.mlkit:vision-common:17.3.0")
 
     // Coil

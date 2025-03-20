@@ -20,7 +20,7 @@ fun ImageLabelingResultScreen(
     detectedLabels: List<String>
 ) {
     Scaffold(
-        topBar = { TopBarWithMenu(navController, title = "Results") },
+        topBar = { TopBarWithMenu(navController, title = "Image Labeling Results") },
     ) { paddingValues ->
         Column(
             modifier = Modifier

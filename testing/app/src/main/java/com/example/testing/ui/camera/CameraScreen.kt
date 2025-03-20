@@ -74,24 +74,35 @@ fun CameraScreen(
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Button(
                             onClick = {
-// Inside CameraScreen.kt (snippet)
+                                // Inside CameraScreen.kt (snippet)
                                 cameraManager.takePhoto(cameraExecutor) { uri ->
                                     uri?.let {
                                         val processorType = when (selectedModel) {
                                             "Image Labeling" -> MLKitManager.ProcessorType.IMAGE_LABELING
                                             "Object Detection" -> MLKitManager.ProcessorType.OBJECT_DETECTION
+                                            "Subject Segmentation" -> MLKitManager.ProcessorType.SUBJECT_SEGMENTATION
+                                            "Text Recognition" -> MLKitManager.ProcessorType.TEXT_RECOGNITION
                                             else -> MLKitManager.ProcessorType.IMAGE_LABELING
                                         }
-                                        mlKitManager.processImage(context, it, processorType) { labels ->
-                                            if (selectedModel == "Object Detection") {
-                                                val encodedResults = Uri.encode(labels.joinToString("|"))
-                                                val encodedImageUri = Uri.encode(it.toString())
-                                                navController.navigate("object_detection_results/$encodedResults/$encodedImageUri")
-                                            } else {
-                                                val encodedResults = Uri.encode(labels.joinToString("|"))
-                                                navController.navigate("results/$encodedResults")
+                                        mlKitManager.processImage(context, it, processorType) { results ->
+                                            when (selectedModel) {
+                                                "Object Detection" -> {
+                                                    val encodedResults = Uri.encode(results.joinToString("|"))
+                                                    val encodedImageUri = Uri.encode(it.toString())
+                                                    navController.navigate("object_detection_results/$encodedResults/$encodedImageUri")
+                                                }
+                                                "Text Recognition" -> {
+                                                    val encodedResults = Uri.encode(results.joinToString("|"))
+                                                    val encodedImageUri = Uri.encode(it.toString())
+                                                    navController.navigate("text_recognition_results/$encodedResults/$encodedImageUri")
+                                                }
+                                                else -> {
+                                                    val encodedResults = Uri.encode(results.joinToString("|"))
+                                                    navController.navigate("results/$encodedResults")
+                                                }
                                             }
                                         }
+
                                     }
                                 }
                             },
