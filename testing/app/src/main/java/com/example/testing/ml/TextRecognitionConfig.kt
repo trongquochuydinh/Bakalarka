@@ -2,7 +2,7 @@
 package com.example.testing.ml
 
 object TextRecognitionConfig {
-    // Allowed values: "block", "line", "element", "word", "symbol"
+    // Allowed values: "block", "line", "word", "symbol"
     var segmentationMode: String = "block"
     // For symbol segmentation: if non-null, only that symbol will be highlighted.
     var highlightSymbol: Char? = null

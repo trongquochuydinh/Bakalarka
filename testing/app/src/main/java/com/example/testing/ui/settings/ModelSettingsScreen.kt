@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.testing.ml.TextRecognitionConfig
+import com.example.testing.ui.components.TopBarWithMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,11 +21,7 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
     var highlightSymbol by remember { mutableStateOf(TextRecognitionConfig.highlightSymbol?.toString() ?: "") }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Model Settings") }
-            )
-        }
+        topBar = { TopBarWithMenu(navController, title = "Model Settings") },
     ) { paddingValues ->
         Column(modifier = Modifier
             .fillMaxSize()
@@ -43,7 +40,7 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                         .padding(8.dp)
                 )
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    listOf("block", "line", "element", "word", "symbol").forEach { option ->
+                    listOf("block", "line", "word", "symbol").forEach { option ->
                         DropdownMenuItem(text = { Text(option) },
                             onClick = {
                                 mode = option
@@ -77,12 +74,6 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-            }
-            Button(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Save Settings")
             }
         }
     }

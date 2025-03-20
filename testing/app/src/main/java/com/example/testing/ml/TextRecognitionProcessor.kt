@@ -36,16 +36,6 @@ class TextRecognitionProcessor : BaseMLProcessor() {
                                 }
                             }
                         }
-                        "element" -> {
-                            result.textBlocks.forEach { block ->
-                                block.lines.forEach { line ->
-                                    line.elements.forEach { element ->
-                                        val rect = element.boundingBox
-                                        segments.add("Element: ${element.text} ([${rect?.left}, ${rect?.top}, ${rect?.right}, ${rect?.bottom}])")
-                                    }
-                                }
-                            }
-                        }
                         "word" -> {
                             // In ML Kit, elements usually represent words.
                             result.textBlocks.forEach { block ->
