@@ -62,11 +62,13 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable("results/{detectedLabels}") { backStackEntry ->
+                        composable("results/{detectedLabels}/{imageUri}") { backStackEntry ->
                             val labelsString = backStackEntry.arguments?.getString("detectedLabels") ?: ""
+                            val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
                             val labels = if (labelsString.isNotEmpty()) labelsString.split("|") else emptyList()
                             ImageLabelingResultScreen(
                                 navController = navController,
+                                imageUri = imageUri,
                                 detectedLabels = labels
                             )
                         }

@@ -6,10 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.testing.ml.TextRecognitionConfig
+import com.example.testing.ml.ImageLabelingConfig
 import com.example.testing.ui.components.TopBarWithMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,10 +23,12 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
     Scaffold(
         topBar = { TopBarWithMenu(navController, title = "Model Settings") },
     ) { paddingValues ->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
             Text(text = "Text Recognition Segmentation Mode")
             // Dropdown to select segmentation mode.
             var expanded by remember { mutableStateOf(false) }
@@ -41,12 +43,14 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 )
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     listOf("block", "line", "word", "symbol").forEach { option ->
-                        DropdownMenuItem(text = { Text(option) },
+                        DropdownMenuItem(
+                            text = { Text(option) },
                             onClick = {
                                 mode = option
                                 expanded = false
                                 TextRecognitionConfig.segmentationMode = option
-                            })
+                            }
+                        )
                     }
                 }
             }
@@ -75,6 +79,22 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
+            // New Slider for Minimum Confidence Threshold
+            Spacer(modifier = Modifier.height(16.dp))
+            var sliderValue by remember { mutableStateOf(ImageLabelingConfig.minConfidencePercentage.toFloat()) }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "Minimum Confidence for Image Labeling: ${sliderValue.toInt()}%")
+            Slider(
+                value = sliderValue,
+                onValueChange = { newValue ->
+                    sliderValue = newValue
+                    ImageLabelingConfig.minConfidencePercentage = newValue.toInt()
+                },
+                valueRange = 0f..100f,
+                steps = 99, // each step represents 1%
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

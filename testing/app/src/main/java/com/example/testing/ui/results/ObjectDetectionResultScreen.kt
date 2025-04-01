@@ -2,23 +2,20 @@
 package com.example.testing.ui.results
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,14 +28,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.size.Size as CoilSize
 import com.example.testing.ui.components.TopBarWithMenu
-
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,61 +63,100 @@ fun ObjectDetectionResultScreen(
                 val bottom = boxValues[3].toFloat()
                 Detection(label, ComposeRect(left, top, right, bottom))
             } catch (e: Exception) {
+                Log.e("ObjectDetection", "Failed to parse detection: $result", e)
                 null
             }
         }
     }
 
-    // This variable will hold the drawn image size.
-    var drawnImageSize by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
+    // This variable will hold the drawn image size
+    var imageSize by remember { mutableStateOf(IntSize.Zero) }
+    val context = LocalContext.current
 
-    // Use Coil's AsyncImagePainter to load the image.
-    val painter = rememberAsyncImagePainter(model = imageUri)
+    // Use Coil's AsyncImagePainter with additional metadata to get original dimensions
+    val painter = rememberAsyncImagePainter(
+        model = ImageRequest.Builder(context)
+            .data(imageUri)
+            .size(CoilSize.ORIGINAL) // Request original size to get metadata
+            .allowHardware(false) // Disable hardware bitmaps for direct access
+            .build()
+    )
+    val painterState = painter.state
+
+    // Track original image dimensions
+    var originalWidth by remember { mutableStateOf(0f) }
+    var originalHeight by remember { mutableStateOf(0f) }
+
+    // Update original dimensions when image is loaded
+    LaunchedEffect(painterState) {
+        if (painterState is AsyncImagePainter.State.Success) {
+            val drawable = painterState.result.drawable
+            originalWidth = drawable.intrinsicWidth.toFloat()
+            originalHeight = drawable.intrinsicHeight.toFloat()
+            Log.d("ObjectDetection", "Original image dimensions: $originalWidth x $originalHeight")
+        }
+    }
 
     Scaffold(
         topBar = { TopBarWithMenu(navController, title = "Object Detection Results") },
     ) { paddingValues ->
-        // BoxWithConstraints lets you get maxWidth easily.
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Display the image and capture its drawn size.
+            // Display the image and capture its size
             Image(
                 painter = painter,
                 contentDescription = "Captured Image",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .onSizeChanged { drawnImageSize = it },
-                contentScale = ContentScale.FillWidth
+                    .fillMaxSize()
+                    .onSizeChanged { size ->
+                        imageSize = size
+                        Log.d("ObjectDetection", "Image display size: $size")
+                    },
+                contentScale = ContentScale.Fit
             )
-            // Overlay a Canvas on top of the image.
-            Canvas(modifier = Modifier.fillMaxWidth().height(with(androidx.compose.ui.platform.LocalDensity.current) { drawnImageSize.height.toDp() })) {
-                // Only proceed if we have the original image dimensions.
-                if (painter.state is coil.compose.AsyncImagePainter.State.Success) {
-                    val drawable = (painter.state as coil.compose.AsyncImagePainter.State.Success).result.drawable
-                    val originalWidth = drawable.intrinsicWidth.toFloat()
-                    val originalHeight = drawable.intrinsicHeight.toFloat()
-                    // Our image is displayed with ContentScale.FillWidth.
-                    // So the displayed width equals the canvas width.
-                    val scaleX = size.width / originalWidth
-                    // The displayed height will be originalHeight * scaleX.
-                    val scaleY = size.height / originalHeight
 
-                    // Draw each bounding box scaled appropriately.
+            // Overlay canvas for bounding boxes
+            if (painterState is AsyncImagePainter.State.Success &&
+                imageSize != IntSize.Zero &&
+                originalWidth > 0 &&
+                originalHeight > 0) {
+
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    Log.d("ObjectDetection", "Original image size: $originalWidth x $originalHeight")
+                    Log.d("ObjectDetection", "Canvas size: ${size.width} x ${size.height}")
+                    Log.d("ObjectDetection", "Image display size: ${imageSize.width} x ${imageSize.height}")
+
+                    // Calculate scale factor for ContentScale.Fit
+                    val widthRatio = imageSize.width / originalWidth
+                    val heightRatio = imageSize.height / originalHeight
+                    val scaleFactor = minOf(widthRatio, heightRatio)
+
+                    // Calculate offset for letterboxing (centering the image)
+                    val offsetX = (imageSize.width - originalWidth * scaleFactor) / 2f
+                    val offsetY = (imageSize.height - originalHeight * scaleFactor) / 2f
+
+                    Log.d("ObjectDetection", "Scale factor: $scaleFactor, Offset: ($offsetX, $offsetY)")
+
+                    // Draw each bounding box scaled appropriately
                     detections.forEach { detection ->
-                        val scaledLeft = detection.box.left * scaleX
-                        val scaledTop = detection.box.top * scaleY
-                        val scaledWidth = detection.box.width * scaleX
-                        val scaledHeight = detection.box.height * scaleY
+                        val scaledLeft = detection.box.left * scaleFactor + offsetX
+                        val scaledTop = detection.box.top * scaleFactor + offsetY
+                        val scaledWidth = (detection.box.right - detection.box.left) * scaleFactor
+                        val scaledHeight = (detection.box.bottom - detection.box.top) * scaleFactor
+
+                        Log.d("ObjectDetection", "Drawing box: ${detection.label} at $scaledLeft,$scaledTop with size $scaledWidth x $scaledHeight")
+
                         drawRect(
                             color = Color.Red,
                             topLeft = Offset(scaledLeft, scaledTop),
-                            size = androidx.compose.ui.geometry.Size(scaledWidth, scaledHeight),
-                            style = Stroke(width = 4f, cap = StrokeCap.Round)
+                            size = Size(scaledWidth, scaledHeight),
+                            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
                         )
-                        // Optionally, you can also draw the label text.
+
+                        // In a real implementation, you might want to draw the label text here
                     }
                 }
             }

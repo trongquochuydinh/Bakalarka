@@ -1,3 +1,4 @@
+// ImageLabelingProcessor.kt
 package com.example.testing.ml
 
 import android.content.Context
@@ -16,11 +17,17 @@ class ImageLabelingProcessor : BaseMLProcessor() {
         onResult: (List<String>) -> Unit
     ) {
         val image = InputImage.fromFilePath(context, imageUri)
-        val labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS)
+        // Create custom options using the slider's configuration value.
+        val options = ImageLabelerOptions.Builder()
+            .setConfidenceThreshold(ImageLabelingConfig.minConfidencePercentage / 100.0f)
+            .build()
+        val labeler = ImageLabeling.getClient(options)
 
         labeler.process(image)
             .addOnSuccessListener { labels ->
-                val labelTexts = labels.map { label -> "${label.text} (${(label.confidence * 100).toInt()}%)" }
+                val labelTexts = labels.map { label ->
+                    "${label.text} (${(label.confidence * 100).toInt()}%)"
+                }
                 onResult(labelTexts)
                 Toast.makeText(context, "Detekce dokončena", Toast.LENGTH_SHORT).show()
             }

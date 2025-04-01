@@ -1,6 +1,7 @@
 package com.example.testing.ui.camera
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,7 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +38,7 @@ fun CameraScreen(
     var detectedLabels by remember { mutableStateOf(listOf<String>()) }
 
     // Available ML Models
-    val models = listOf("Image Labeling", "Text Recognition", "Face Detection", "Object Detection", "Subject Segmentation")
+    val models = listOf("Image Labeling", "Text Recognition", "Object Detection")
     var selectedModel by remember { mutableStateOf(models[0]) }
 
     Scaffold(
@@ -74,35 +74,45 @@ fun CameraScreen(
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Button(
                             onClick = {
-                                // Inside CameraScreen.kt (snippet)
                                 cameraManager.takePhoto(cameraExecutor) { uri ->
                                     uri?.let {
                                         val processorType = when (selectedModel) {
                                             "Image Labeling" -> MLKitManager.ProcessorType.IMAGE_LABELING
                                             "Object Detection" -> MLKitManager.ProcessorType.OBJECT_DETECTION
-                                            "Subject Segmentation" -> MLKitManager.ProcessorType.SUBJECT_SEGMENTATION
                                             "Text Recognition" -> MLKitManager.ProcessorType.TEXT_RECOGNITION
                                             else -> MLKitManager.ProcessorType.IMAGE_LABELING
                                         }
                                         mlKitManager.processImage(context, it, processorType) { results ->
                                             when (selectedModel) {
                                                 "Object Detection" -> {
-                                                    val encodedResults = Uri.encode(results.joinToString("|"))
-                                                    val encodedImageUri = Uri.encode(it.toString())
-                                                    navController.navigate("object_detection_results/$encodedResults/$encodedImageUri")
+                                                    if (results.isNotEmpty()) {
+                                                        val encodedResults = Uri.encode(results.joinToString("|"))
+                                                        val encodedImageUri = Uri.encode(it.toString())
+                                                        navController.navigate("object_detection_results/$encodedResults/$encodedImageUri")
+                                                    } else {
+                                                        Toast.makeText(context, "No objects detected", Toast.LENGTH_SHORT).show()
+                                                    }
                                                 }
                                                 "Text Recognition" -> {
-                                                    val encodedResults = Uri.encode(results.joinToString("|"))
-                                                    val encodedImageUri = Uri.encode(it.toString())
-                                                    navController.navigate("text_recognition_results/$encodedResults/$encodedImageUri")
+                                                    if (results.isNotEmpty()) {
+                                                        val encodedResults = Uri.encode(results.joinToString("|"))
+                                                        val encodedImageUri = Uri.encode(it.toString())
+                                                        navController.navigate("text_recognition_results/$encodedResults/$encodedImageUri")
+                                                    } else {
+                                                        Toast.makeText(context, "No text recognized", Toast.LENGTH_SHORT).show()
+                                                    }
                                                 }
-                                                else -> {
-                                                    val encodedResults = Uri.encode(results.joinToString("|"))
-                                                    navController.navigate("results/$encodedResults")
+                                                else -> { // Image Labeling
+                                                    if (results.isNotEmpty()) {
+                                                        val encodedResults = Uri.encode(results.joinToString("|"))
+                                                        val encodedImageUri = Uri.encode(it.toString())
+                                                        navController.navigate("results/$encodedResults/$encodedImageUri")
+                                                    } else {
+                                                        Toast.makeText(context, "No labels found", Toast.LENGTH_SHORT).show()
+                                                    }
                                                 }
                                             }
                                         }
-
                                     }
                                 }
                             },

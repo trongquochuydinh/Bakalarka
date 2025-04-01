@@ -1,6 +1,7 @@
 package com.example.testing.ui.camera
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.*
@@ -11,6 +12,10 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
+import androidx.exifinterface.media.ExifInterface
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import java.io.FileOutputStream
 
 class CameraManager(private val context: Context) {
     private lateinit var imageCapture: ImageCapture
@@ -63,9 +68,10 @@ class CameraManager(private val context: Context) {
             executor,
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    val savedUri = Uri.fromFile(photoFile)
-                    Log.d("CameraManager", "Photo saved: $savedUri")
-                    onImageCaptured(savedUri)
+                    // Normalize the image orientation before passing it on
+                    val normalizedUri = normalizeImage(photoFile)
+                    Log.d("CameraManager", "Photo normalized: $normalizedUri")
+                    onImageCaptured(normalizedUri)
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -74,5 +80,41 @@ class CameraManager(private val context: Context) {
                 }
             }
         )
+    }
+
+    private fun normalizeImage(imageFile: File): Uri {
+        return try {
+            val exif = ExifInterface(imageFile.absolutePath)
+            val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            val rotationDegrees = when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270
+                else -> 0
+            }
+
+            if (rotationDegrees == 0) {
+                Uri.fromFile(imageFile)
+            } else {
+                // Decode the file into a bitmap
+                val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+                val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
+                val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+
+                // Save the rotated bitmap to a new file
+                val normalizedFile = File(imageFile.parent, "normalized_${imageFile.name}")
+                FileOutputStream(normalizedFile).use { out ->
+                    rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                }
+                // Optionally, update the EXIF of the normalized file so its orientation is set to normal.
+                val newExif = ExifInterface(normalizedFile.absolutePath)
+                newExif.setAttribute(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL.toString())
+                newExif.saveAttributes()
+                Uri.fromFile(normalizedFile)
+            }
+        } catch (e: Exception) {
+            Log.e("CameraManager", "Failed to normalize image", e)
+            Uri.fromFile(imageFile)
+        }
     }
 }

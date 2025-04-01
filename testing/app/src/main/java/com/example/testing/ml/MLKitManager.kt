@@ -8,7 +8,6 @@ class MLKitManager {
 
     private val imageLabelingProcessor = ImageLabelingProcessor()
     private val objectDetectionProcessor = ObjectDetectionProcessor()
-    private val subjectSegmentationProcessor = SubjectSegmentationProcessor()
     private val textRecognitionProcessor = TextRecognitionProcessor()
 
     fun processImage(
@@ -20,7 +19,6 @@ class MLKitManager {
         when (processorType) {
             ProcessorType.IMAGE_LABELING -> imageLabelingProcessor.processImage(context, imageUri, onResult)
             ProcessorType.OBJECT_DETECTION -> objectDetectionProcessor.processImage(context, imageUri, onResult)
-            ProcessorType.SUBJECT_SEGMENTATION -> subjectSegmentationProcessor.processImage(context, imageUri, onResult)
             ProcessorType.TEXT_RECOGNITION -> textRecognitionProcessor.processImage(context, imageUri, onResult)
         }
     }
@@ -28,7 +26,6 @@ class MLKitManager {
     enum class ProcessorType {
         IMAGE_LABELING,
         OBJECT_DETECTION,
-        SUBJECT_SEGMENTATION,
         TEXT_RECOGNITION
     }
 }
