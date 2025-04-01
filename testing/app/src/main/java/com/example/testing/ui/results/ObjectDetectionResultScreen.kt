@@ -41,6 +41,10 @@ import coil.request.ImageRequest
 import coil.size.Size as CoilSize
 import com.example.testing.ui.components.TopBarWithMenu
 
+// TODO: Display a table containing the ID of a bounding box and its corresponding coordinates
+// TODO: Each bounding box should have an ID displayed
+// TODO: Make the drawing of a bounding box using coordinates a component which will be shared in ObjectDetectionResultScreen and TextRecognitionResultScreen
+
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
