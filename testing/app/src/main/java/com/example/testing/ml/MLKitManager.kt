@@ -3,6 +3,9 @@ package com.example.testing.ml
 
 import android.content.Context
 import android.net.Uri
+import com.example.testing.ml.processors.ImageLabelingProcessor
+import com.example.testing.ml.processors.ObjectDetectionProcessor
+import com.example.testing.ml.processors.TextRecognitionProcessor
 
 class MLKitManager {
 

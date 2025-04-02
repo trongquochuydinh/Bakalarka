@@ -1,5 +1,5 @@
 // ObjectDetectionProcessor.kt
-package com.example.testing.ml
+package com.example.testing.ml.processors
 
 import android.content.Context
 import android.graphics.Rect

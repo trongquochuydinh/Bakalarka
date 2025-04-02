@@ -1,10 +1,11 @@
 // TextRecognitionProcessor.kt
-package com.example.testing.ml
+package com.example.testing.ml.processors
 
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import com.example.testing.ml.configs.TextRecognitionConfig
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions

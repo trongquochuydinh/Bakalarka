@@ -1,5 +1,5 @@
 // TextRecognitionConfig.kt
-package com.example.testing.ml
+package com.example.testing.ml.configs
 
 object TextRecognitionConfig {
     // Allowed values: "block", "line", "word", "symbol"
