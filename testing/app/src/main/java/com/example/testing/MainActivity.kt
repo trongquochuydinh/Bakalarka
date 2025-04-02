@@ -32,7 +32,7 @@ import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
     private lateinit var cameraExecutor: ExecutorService
-    private lateinit var themeManager: ThemeManager // Theme persistence
+    private lateinit var themeManager: ThemeManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
         themeManager = ThemeManager(this)
 
         lifecycleScope.launch {
-            val savedTheme = themeManager.getTheme.first() // Get stored theme
+            val savedTheme = themeManager.getTheme.first()
             setContent {
                 var isDarkTheme by rememberSaveable { mutableStateOf(savedTheme) }
 

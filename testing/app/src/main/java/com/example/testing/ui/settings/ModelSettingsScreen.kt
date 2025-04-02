@@ -8,8 +8,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.testing.ml.TextRecognitionConfig
-import com.example.testing.ml.ImageLabelingConfig
+import com.example.testing.ml.configs.TextRecognitionConfig
+import com.example.testing.ml.configs.ImageLabelingConfig
 import com.example.testing.ui.components.TopBarWithMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
