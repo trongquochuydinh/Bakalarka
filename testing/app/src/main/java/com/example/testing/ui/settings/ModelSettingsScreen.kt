@@ -12,7 +12,6 @@ import com.example.testing.ml.configs.TextRecognitionConfig
 import com.example.testing.ml.configs.ImageLabelingConfig
 import com.example.testing.ui.components.TopBarWithMenu
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
     // For simplicity, we only implement text recognition settings.
@@ -60,7 +59,7 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                     value = highlightWord,
                     onValueChange = {
                         highlightWord = it
-                        TextRecognitionConfig.highlightWord = if (it.isBlank()) null else it
+                        TextRecognitionConfig.highlightWord = it.ifBlank { null }
                     },
                     label = { Text("Highlight Word (optional)") },
                     modifier = Modifier.fillMaxWidth()
@@ -81,7 +80,7 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
             }
             // New Slider for Minimum Confidence Threshold
             Spacer(modifier = Modifier.height(16.dp))
-            var sliderValue by remember { mutableStateOf(ImageLabelingConfig.minConfidencePercentage.toFloat()) }
+            var sliderValue by remember { mutableFloatStateOf(ImageLabelingConfig.minConfidencePercentage.toFloat()) }
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = "Minimum Confidence for Image Labeling: ${sliderValue.toInt()}%")

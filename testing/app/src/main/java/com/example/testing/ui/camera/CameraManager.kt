@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService
 import androidx.exifinterface.media.ExifInterface
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.os.Environment
 import java.io.FileOutputStream
 
 class CameraManager(private val context: Context) {
@@ -62,7 +63,7 @@ class CameraManager(private val context: Context) {
         onImageCaptured: (Uri?) -> Unit
     ) {
         val photoFile = File(
-            context.externalMediaDirs.first(),
+            context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
             SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
         )
 

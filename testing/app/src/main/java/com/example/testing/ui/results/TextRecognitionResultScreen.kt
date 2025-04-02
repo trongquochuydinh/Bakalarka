@@ -12,7 +12,6 @@ import com.example.testing.ui.components.TopBarWithMenu
 import com.example.testing.ui.components.BoundingBoxOverlay
 import com.example.testing.ui.components.CoordTable
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextRecognitionResultScreen(
     navController: NavController,

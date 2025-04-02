@@ -22,7 +22,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size as CoilSize
 
-@SuppressLint("UnusedBoxWithConstraintsScope")
+@SuppressLint("UnusedBoxWithConstraintsScope", "ModifierParameter")
 @Composable
 fun BoundingBoxOverlay(
     imageUri: String,
@@ -45,8 +45,8 @@ fun BoundingBoxOverlay(
     )
     val painterState = painter.state
 
-    var originalWidth by remember { mutableStateOf(0f) }
-    var originalHeight by remember { mutableStateOf(0f) }
+    var originalWidth by remember { mutableFloatStateOf(0f) }
+    var originalHeight by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(painterState) {
         if (painterState is AsyncImagePainter.State.Success) {

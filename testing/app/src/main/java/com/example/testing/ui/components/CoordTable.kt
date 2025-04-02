@@ -32,7 +32,7 @@ fun CoordTable(
             Text("Bottom", modifier = Modifier.weight(0.2f))
         }
 
-        Divider()
+        HorizontalDivider()
 
         LazyColumn {
             itemsIndexed(boundingBoxes) { index, box ->

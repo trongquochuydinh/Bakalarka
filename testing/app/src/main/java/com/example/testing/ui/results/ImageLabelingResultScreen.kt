@@ -18,7 +18,6 @@ import com.example.testing.ui.components.TopBarWithMenu
 
 data class LabelItem(val text: String, val confidence: Int)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageLabelingResultScreen(
     navController: NavController,
@@ -103,7 +102,7 @@ fun ImageLabelingResultScreen(
                 )
             }
 
-            Divider(color = Color.LightGray)
+            HorizontalDivider(color = Color.LightGray)
 
             // Table Rows
             LazyColumn(

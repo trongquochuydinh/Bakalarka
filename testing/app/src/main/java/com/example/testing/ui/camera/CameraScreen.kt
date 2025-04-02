@@ -1,8 +1,6 @@
 package com.example.testing.ui.camera
 
 import android.net.Uri
-import android.widget.Toast
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,14 +22,12 @@ import com.example.testing.ml.MLKitManager
 import com.example.testing.ui.components.TopBarWithMenu
 import java.util.concurrent.ExecutorService
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraScreen(
     navController: NavController,
     cameraExecutor: ExecutorService,
     selectedModel: String,
-    onModelSelected: (String) -> Unit,
-    onResults: (List<String>) -> Unit
+    onModelSelected: (String) -> Unit
 ) {
     val context = LocalContext.current
     val cameraManager = remember { CameraManager(context) }
@@ -43,7 +39,6 @@ fun CameraScreen(
     }
 
     val mlKitManager = remember { MLKitManager() }
-    var detectedLabels by remember { mutableStateOf(listOf<String>()) }
 
     val models = listOf("Image Labeling", "Text Recognition", "Object Detection")
 
@@ -124,7 +119,7 @@ fun CameraScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AndroidView(
-                factory = { ctx -> cameraManager.startCamera() },
+                factory = { cameraManager.startCamera() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)

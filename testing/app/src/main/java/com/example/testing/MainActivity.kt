@@ -2,7 +2,6 @@ package com.example.testing
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -57,8 +56,7 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 cameraExecutor = cameraExecutor,
                                 selectedModel = selectedModel,
-                                onModelSelected = { selectedModel = it },
-                                onResults = { results -> /* handled below */ }
+                                onModelSelected = { selectedModel = it }
                             )
                         }
                         composable("results/{detectedLabels}/{imageUri}") { backStackEntry ->
