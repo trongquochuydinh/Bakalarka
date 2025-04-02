@@ -27,26 +27,31 @@ import java.util.concurrent.ExecutorService
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraScreen(
-    navController: NavController,  // Pass navController for navigation
+    navController: NavController,
     cameraExecutor: ExecutorService,
+    selectedModel: String,
+    onModelSelected: (String) -> Unit,
     onResults: (List<String>) -> Unit
 ) {
     val context = LocalContext.current
     val cameraManager = remember { CameraManager(context) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraManager.stopCamera()
+        }
+    }
+
     val mlKitManager = remember { MLKitManager() }
-    var expanded by remember { mutableStateOf(false) }
     var detectedLabels by remember { mutableStateOf(listOf<String>()) }
 
-    // Available ML Models
     val models = listOf("Image Labeling", "Text Recognition", "Object Detection")
-    var selectedModel by remember { mutableStateOf(models[0]) }
 
     Scaffold(
         modifier = Modifier.background(MaterialTheme.colorScheme.primary),
         topBar = { TopBarWithMenu(navController, title = "Camera with ML Kit") },
         bottomBar = {
             Column {
-                // Horizontal ML Model Selector
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -59,7 +64,7 @@ fun CameraScreen(
                             text = model,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .clickable { selectedModel = model }
+                                .clickable { onModelSelected(model) }
                                 .background(
                                     if (selectedModel == model) MaterialTheme.colorScheme.primary else Color.Transparent
                                 )
@@ -69,7 +74,7 @@ fun CameraScreen(
                         )
                     }
                 }
-                // Capture Button
+
                 BottomAppBar {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Button(
@@ -83,34 +88,12 @@ fun CameraScreen(
                                             else -> MLKitManager.ProcessorType.IMAGE_LABELING
                                         }
                                         mlKitManager.processImage(context, it, processorType) { results ->
+                                            val encodedResults = Uri.encode(results.joinToString("|"))
+                                            val encodedUri = Uri.encode(it.toString())
                                             when (selectedModel) {
-                                                "Object Detection" -> {
-                                                    if (results.isNotEmpty()) {
-                                                        val encodedResults = Uri.encode(results.joinToString("|"))
-                                                        val encodedImageUri = Uri.encode(it.toString())
-                                                        navController.navigate("object_detection_results/$encodedResults/$encodedImageUri")
-                                                    } else {
-                                                        Toast.makeText(context, "No objects detected", Toast.LENGTH_SHORT).show()
-                                                    }
-                                                }
-                                                "Text Recognition" -> {
-                                                    if (results.isNotEmpty()) {
-                                                        val encodedResults = Uri.encode(results.joinToString("|"))
-                                                        val encodedImageUri = Uri.encode(it.toString())
-                                                        navController.navigate("text_recognition_results/$encodedResults/$encodedImageUri")
-                                                    } else {
-                                                        Toast.makeText(context, "No text recognized", Toast.LENGTH_SHORT).show()
-                                                    }
-                                                }
-                                                else -> { // Image Labeling
-                                                    if (results.isNotEmpty()) {
-                                                        val encodedResults = Uri.encode(results.joinToString("|"))
-                                                        val encodedImageUri = Uri.encode(it.toString())
-                                                        navController.navigate("results/$encodedResults/$encodedImageUri")
-                                                    } else {
-                                                        Toast.makeText(context, "No labels found", Toast.LENGTH_SHORT).show()
-                                                    }
-                                                }
+                                                "Object Detection" -> navController.navigate("object_detection_results/$encodedResults/$encodedUri")
+                                                "Text Recognition" -> navController.navigate("text_recognition_results/$encodedResults/$encodedUri")
+                                                else -> navController.navigate("results/$encodedResults/$encodedUri")
                                             }
                                         }
                                     }
@@ -141,9 +124,7 @@ fun CameraScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AndroidView(
-                factory = { ctx ->
-                    cameraManager.startCamera()
-                },
+                factory = { ctx -> cameraManager.startCamera() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)

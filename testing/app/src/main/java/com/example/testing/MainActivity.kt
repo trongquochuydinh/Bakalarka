@@ -40,13 +40,13 @@ class MainActivity : ComponentActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         requestCameraPermission()
-
         themeManager = ThemeManager(this)
 
         lifecycleScope.launch {
             val savedTheme = themeManager.getTheme.first()
             setContent {
                 var isDarkTheme by rememberSaveable { mutableStateOf(savedTheme) }
+                var selectedModel by rememberSaveable { mutableStateOf("Image Labeling") }
 
                 TestingTheme(darkTheme = isDarkTheme) {
                     val navController = rememberNavController()
@@ -56,48 +56,33 @@ class MainActivity : ComponentActivity() {
                             CameraScreen(
                                 navController = navController,
                                 cameraExecutor = cameraExecutor,
-                                onResults = { results ->
-                                    val encodedResults = Uri.encode(results.joinToString("|"))
-                                    navController.navigate("results/$encodedResults")
-                                }
+                                selectedModel = selectedModel,
+                                onModelSelected = { selectedModel = it },
+                                onResults = { results -> /* handled below */ }
                             )
                         }
                         composable("results/{detectedLabels}/{imageUri}") { backStackEntry ->
                             val labelsString = backStackEntry.arguments?.getString("detectedLabels") ?: ""
                             val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
                             val labels = if (labelsString.isNotEmpty()) labelsString.split("|") else emptyList()
-                            ImageLabelingResultScreen(
-                                navController = navController,
-                                imageUri = imageUri,
-                                detectedLabels = labels
-                            )
+                            ImageLabelingResultScreen(navController, imageUri, labels)
                         }
-                        // In MainActivity.kt, inside your NavHost declaration:
                         composable("object_detection_results/{detectedResults}/{imageUri}") { backStackEntry ->
                             val resultsString = backStackEntry.arguments?.getString("detectedResults") ?: ""
                             val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
                             val results = if (resultsString.isNotEmpty()) resultsString.split("|") else emptyList()
-                            ObjectDetectionResultScreen(
-                                navController = navController,
-                                imageUri = imageUri,
-                                detectionResults = results
-                            )
+                            ObjectDetectionResultScreen(navController, imageUri, results)
                         }
                         composable("text_recognition_results/{detectedResults}/{imageUri}") { backStackEntry ->
                             val resultsString = backStackEntry.arguments?.getString("detectedResults") ?: ""
                             val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
                             val results = if (resultsString.isNotEmpty()) resultsString.split("|") else emptyList()
-                            TextRecognitionResultScreen(
-                                navController = navController,
-                                imageUri = imageUri,
-                                detectedResults = results
-                            )
+                            TextRecognitionResultScreen(navController, imageUri, results)
                         }
-
                         composable("visual_settings") {
                             VisualSettingsScreen(navController, isDarkTheme) { newTheme ->
                                 isDarkTheme = newTheme
-                                lifecycleScope.launch { themeManager.saveTheme(newTheme) } // Save theme
+                                lifecycleScope.launch { themeManager.saveTheme(newTheme) }
                             }
                         }
                         composable("model_settings") {

@@ -21,13 +21,14 @@ class CameraManager(private val context: Context) {
     private lateinit var imageCapture: ImageCapture
     private lateinit var previewView: PreviewView
 
+    private var cameraProvider: ProcessCameraProvider? = null
+
     fun startCamera(): PreviewView {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         previewView = PreviewView(context)
 
         cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-
+            cameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
             }
@@ -37,8 +38,8 @@ class CameraManager(private val context: Context) {
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
+                cameraProvider?.unbindAll()
+                cameraProvider?.bindToLifecycle(
                     context as androidx.lifecycle.LifecycleOwner,
                     cameraSelector,
                     preview,
@@ -50,6 +51,10 @@ class CameraManager(private val context: Context) {
         }, ContextCompat.getMainExecutor(context))
 
         return previewView
+    }
+
+    fun stopCamera() {
+        cameraProvider?.unbindAll()
     }
 
     fun takePhoto(
