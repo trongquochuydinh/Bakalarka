@@ -1,7 +1,6 @@
 package com.example.testing.ui.components
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -12,7 +11,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -29,8 +27,10 @@ import coil.size.Size as CoilSize
 fun BoundingBoxOverlay(
     imageUri: String,
     boundingBoxes: List<ComposeRect>,
+    selectedIndex: Int? = null,
     modifier: Modifier = Modifier,
-    boxColor: Color = Color.Red,
+    boxColor: Color = Color.Blue,
+    highlightColor: Color = Color.Red,
     strokeWidth: Float = 3f
 ) {
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
@@ -81,17 +81,17 @@ fun BoundingBoxOverlay(
                 val offsetX = (imageSize.width - originalWidth * scaleFactor) / 2f
                 val offsetY = (imageSize.height - originalHeight * scaleFactor) / 2f
 
-                boundingBoxes.forEach { box ->
+                boundingBoxes.forEachIndexed { index, box ->
                     val scaledLeft = box.left * scaleFactor + offsetX
                     val scaledTop = box.top * scaleFactor + offsetY
                     val scaledWidth = (box.right - box.left) * scaleFactor
                     val scaledHeight = (box.bottom - box.top) * scaleFactor
 
                     drawRect(
-                        color = boxColor,
+                        color = if (index == selectedIndex) highlightColor else boxColor,
                         topLeft = Offset(scaledLeft, scaledTop),
                         size = Size(scaledWidth, scaledHeight),
-                        style = Stroke(width = strokeWidth.dp.toPx(), cap = StrokeCap.Round)
+                        style = Stroke(width = strokeWidth.dp.toPx())
                     )
                 }
             }

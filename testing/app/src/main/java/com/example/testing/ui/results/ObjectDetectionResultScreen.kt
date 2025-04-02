@@ -1,14 +1,16 @@
 package com.example.testing.ui.results
 
 import android.util.Log
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.navigation.NavController
 import com.example.testing.ui.components.TopBarWithMenu
 import com.example.testing.ui.components.BoundingBoxOverlay
+import com.example.testing.ui.components.CoordTable
 
 @Composable
 fun ObjectDetectionResultScreen(
@@ -37,15 +39,39 @@ fun ObjectDetectionResultScreen(
     }
 
     val boxes = detections.map { it.box }
+    var selectedBoxIndex by remember { mutableStateOf<Int?>(null) }
+    var showCoords by remember { mutableStateOf(true) }
+
 
     Scaffold(
         topBar = { TopBarWithMenu(navController, title = "Object Detection Results") },
     ) { paddingValues ->
-        BoundingBoxOverlay(
-            imageUri = imageUri,
-            boundingBoxes = boxes,
-            modifier = Modifier
-                .padding(paddingValues)
-        )
+        Column(modifier = Modifier.padding(paddingValues)) {
+            BoundingBoxOverlay(
+                imageUri = imageUri,
+                boundingBoxes = boxes,
+                selectedIndex = selectedBoxIndex,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
+
+            Button(
+                onClick = { showCoords = !showCoords },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(if (showCoords) "Hide Coordinates" else "Show Coordinates")
+            }
+
+            if (showCoords) {
+                CoordTable(
+                    boundingBoxes = boxes,
+                    selectedIndex = selectedBoxIndex,
+                    onSelect = { selectedBoxIndex = it }
+                )
+            }
+        }
     }
 }
