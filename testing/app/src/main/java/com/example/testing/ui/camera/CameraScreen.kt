@@ -82,9 +82,12 @@ fun CameraScreen(
                                             "Text Recognition" -> MLKitManager.ProcessorType.TEXT_RECOGNITION
                                             else -> MLKitManager.ProcessorType.IMAGE_LABELING
                                         }
+
                                         mlKitManager.processImage(context, it, processorType) { results ->
-                                            val encodedResults = Uri.encode(results.joinToString("|"))
+                                            val resultText = if (results.isEmpty()) "none" else results.joinToString("|")
+                                            val encodedResults = Uri.encode(resultText)
                                             val encodedUri = Uri.encode(it.toString())
+
                                             when (selectedModel) {
                                                 "Object Detection" -> navController.navigate("object_detection_results/$encodedResults/$encodedUri")
                                                 "Text Recognition" -> navController.navigate("text_recognition_results/$encodedResults/$encodedUri")

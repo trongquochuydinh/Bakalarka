@@ -18,6 +18,7 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
     var mode by remember { mutableStateOf(TextRecognitionConfig.segmentationMode) }
     var highlightWord by remember { mutableStateOf(TextRecognitionConfig.highlightWord ?: "") }
     var highlightSymbol by remember { mutableStateOf(TextRecognitionConfig.highlightSymbol?.toString() ?: "") }
+    var useCloudModel by remember { mutableStateOf(ImageLabelingConfig.useCloudModel) }
 
     Scaffold(
         topBar = { TopBarWithMenu(navController, title = "Model Settings") },
@@ -94,6 +95,26 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 steps = 99, // each step represents 1%
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Image Labeling Settings", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Use Cloud Model")
+                Switch(
+                    checked = useCloudModel,
+                    onCheckedChange = {
+                        useCloudModel = it
+                        ImageLabelingConfig.useCloudModel = it
+                    }
+                )
+            }
+
         }
     }
 }

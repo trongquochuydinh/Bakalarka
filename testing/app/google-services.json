@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "370444131368",
-    "project_id": "testing-13856",
-    "storage_bucket": "testing-13856.firebasestorage.app"
+    "project_number": "66572739894",
+    "project_id": "bachelor-thesis-app-dc026",
+    "storage_bucket": "bachelor-thesis-app-dc026.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:370444131368:android:faf35c517b0d6782c8a91d",
+        "mobilesdk_app_id": "1:66572739894:android:4c591a51694fc8d5453f97",
         "android_client_info": {
           "package_name": "com.example.testing"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAheVc7LFAOI8OROGE0yA09HXEz9nt8oj8"
+          "current_key": "AIzaSyBbQMyc6hb1SHjjHpOeIwlEaZs2cnxC3ys"
         }
       ],
       "services": {
