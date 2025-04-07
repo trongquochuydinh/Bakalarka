@@ -105,32 +105,41 @@ fun ImageLabelingResultScreen(
             HorizontalDivider(color = Color.LightGray)
 
             // Table Rows
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(sortedItems) { item ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
-                    ) {
-                        Row(
+            if (sortedItems.isEmpty()) {
+                Text(
+                    text = "No labels detected.",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = 32.dp)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(sortedItems) { item ->
+                        Card(
                             modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
-                            Text(
-                                text = item.text,
-                                modifier = Modifier.weight(1f),
-                                color = Color.Black
-                            )
-                            Text(
-                                text = "${item.confidence}%",
-                                modifier = Modifier.weight(0.5f),
-                                color = Color.Black
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = item.text,
+                                    modifier = Modifier.weight(1f),
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = "${item.confidence}%",
+                                    modifier = Modifier.weight(0.5f),
+                                    color = Color.Black
+                                )
+                            }
                         }
                     }
                 }
