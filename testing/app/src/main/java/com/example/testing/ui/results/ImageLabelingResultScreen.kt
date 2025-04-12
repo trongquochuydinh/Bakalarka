@@ -27,20 +27,23 @@ fun ImageLabelingResultScreen(
     var sortAscending by remember { mutableStateOf(false) }
     var showImage by remember { mutableStateOf(false) }
 
-    // Parse label + confidence from original strings
     val labelItems = remember(detectedLabels) {
         detectedLabels.map { label ->
-            val regex = Regex("\\((\\d+)%\\)")
-            val match = regex.find(label)
-            val confidence = match?.groupValues?.get(1)?.toIntOrNull() ?: 0
-            LabelItem(label, confidence)
+            // More robust parsing logic that handles different label formats
+            val parts = label.split("(", ")")
+            val labelText = parts[0].trim()
+            val confidenceText = parts.getOrElse(1) { "0%" }.replace("%", "").trim()
+            val confidence = confidenceText.toIntOrNull() ?: 0
+            LabelItem(labelText, confidence)
         }
     }
 
-    // Sort by confidence based on toggle
-    val sortedItems = labelItems.sortedWith(compareBy {
-        if (sortAscending) it.confidence else -it.confidence
-    })
+    // Remember sorted items to prevent unnecessary resorting
+    val sortedItems = remember(labelItems, sortAscending) {
+        labelItems.sortedWith(compareBy {
+            if (sortAscending) it.confidence else -it.confidence
+        })
+    }
 
     Scaffold(
         topBar = { TopBarWithMenu(navController, title = "Image Labeling Results") },
@@ -116,7 +119,10 @@ fun ImageLabelingResultScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(sortedItems) { item ->
+                    items(
+                        items = sortedItems,
+                        key = { "${it.text}_${it.confidence}" }
+                    ) { item ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
