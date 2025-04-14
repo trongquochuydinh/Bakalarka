@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.testing.ml.configs.TextRecognitionConfig
 import com.example.testing.ml.configs.ImageLabelingConfig
+import com.example.testing.ml.configs.ObjectDetectionConfig
 import com.example.testing.ui.components.TopBarWithMenu
 
 @Composable
@@ -18,7 +19,9 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
     var mode by remember { mutableStateOf(TextRecognitionConfig.segmentationMode) }
     var highlightWord by remember { mutableStateOf(TextRecognitionConfig.highlightWord ?: "") }
     var highlightSymbol by remember { mutableStateOf(TextRecognitionConfig.highlightSymbol?.toString() ?: "") }
-    var useCloudModel by remember { mutableStateOf(ImageLabelingConfig.useCloudModel) }
+    var useCloudModelImageLabeling by remember { mutableStateOf(ImageLabelingConfig.useCloudModel) }
+    var useCloudModelObjectDetection by remember { mutableStateOf(ObjectDetectionConfig.useCloudModel) }
+    var useCloudModelTextRecognition by remember { mutableStateOf(TextRecognitionConfig.useCloudModel) }
 
     Scaffold(
         topBar = { TopBarWithMenu(navController, title = "Model Settings") },
@@ -29,6 +32,7 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+            Text("Text Recognition Settings", style = MaterialTheme.typography.titleMedium)
             Text(text = "Text Recognition Segmentation Mode")
             // Dropdown to select segmentation mode.
             var expanded by remember { mutableStateOf(false) }
@@ -79,10 +83,28 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Use Cloud Model")
+                Switch(
+                    checked = useCloudModelTextRecognition,
+                    onCheckedChange = {
+                        useCloudModelTextRecognition = it
+                        TextRecognitionConfig.useCloudModel = it
+                    }
+                )
+            }
+
             // New Slider for Minimum Confidence Threshold
             Spacer(modifier = Modifier.height(16.dp))
             var sliderValue by remember { mutableFloatStateOf(ImageLabelingConfig.minConfidencePercentage.toFloat()) }
-
+            Text("Image Labeling Settings", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = "Minimum Confidence for Image Labeling: ${sliderValue.toInt()}%")
             Slider(
@@ -97,7 +119,7 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Image Labeling Settings", style = MaterialTheme.typography.titleMedium)
+
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier
@@ -107,14 +129,33 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
             ) {
                 Text("Use Cloud Model")
                 Switch(
-                    checked = useCloudModel,
+                    checked = useCloudModelImageLabeling,
                     onCheckedChange = {
-                        useCloudModel = it
+                        useCloudModelImageLabeling = it
                         ImageLabelingConfig.useCloudModel = it
                     }
                 )
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Object Detection Settings", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Use Cloud Model")
+                Switch(
+                    checked = useCloudModelObjectDetection,
+                    onCheckedChange = {
+                        useCloudModelObjectDetection = it
+                        ObjectDetectionConfig.useCloudModel = it
+                    }
+                )
+            }
         }
     }
 }
