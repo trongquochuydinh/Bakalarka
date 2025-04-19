@@ -1,7 +1,6 @@
-// ImageLabelingConfig.kt
 package com.example.testing.ml.configs
 
-object ImageLabelingConfig {
+object ObjectDetectionConfig {
     var useCloudModel: Boolean = false
     var minConfidencePercentage: Int = 70
 }

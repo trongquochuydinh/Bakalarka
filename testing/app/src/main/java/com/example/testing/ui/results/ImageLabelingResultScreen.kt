@@ -27,20 +27,23 @@ fun ImageLabelingResultScreen(
     var sortAscending by remember { mutableStateOf(false) }
     var showImage by remember { mutableStateOf(false) }
 
-    // Parse label + confidence from original strings
     val labelItems = remember(detectedLabels) {
         detectedLabels.map { label ->
-            val regex = Regex("\\((\\d+)%\\)")
-            val match = regex.find(label)
-            val confidence = match?.groupValues?.get(1)?.toIntOrNull() ?: 0
-            LabelItem(label, confidence)
+            // More robust parsing logic that handles different label formats
+            val parts = label.split("(", ")")
+            val labelText = parts[0].trim()
+            val confidenceText = parts.getOrElse(1) { "0%" }.replace("%", "").trim()
+            val confidence = confidenceText.toIntOrNull() ?: 0
+            LabelItem(labelText, confidence)
         }
     }
 
-    // Sort by confidence based on toggle
-    val sortedItems = labelItems.sortedWith(compareBy {
-        if (sortAscending) it.confidence else -it.confidence
-    })
+    // Remember sorted items to prevent unnecessary resorting
+    val sortedItems = remember(labelItems, sortAscending) {
+        labelItems.sortedWith(compareBy {
+            if (sortAscending) it.confidence else -it.confidence
+        })
+    }
 
     Scaffold(
         topBar = { TopBarWithMenu(navController, title = "Image Labeling Results") },
@@ -105,32 +108,44 @@ fun ImageLabelingResultScreen(
             HorizontalDivider(color = Color.LightGray)
 
             // Table Rows
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(sortedItems) { item ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
-                    ) {
-                        Row(
+            if (sortedItems.isEmpty()) {
+                Text(
+                    text = "No labels detected.",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = 32.dp)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(
+                        items = sortedItems,
+                        key = { "${it.text}_${it.confidence}" }
+                    ) { item ->
+                        Card(
                             modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
-                            Text(
-                                text = item.text,
-                                modifier = Modifier.weight(1f),
-                                color = Color.Black
-                            )
-                            Text(
-                                text = "${item.confidence}%",
-                                modifier = Modifier.weight(0.5f),
-                                color = Color.Black
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = item.text,
+                                    modifier = Modifier.weight(1f),
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = "${item.confidence}%",
+                                    modifier = Modifier.weight(0.5f),
+                                    color = Color.Black
+                                )
+                            }
                         }
                     }
                 }

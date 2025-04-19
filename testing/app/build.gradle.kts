@@ -66,33 +66,35 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.3.0")
     implementation("androidx.camera:camera-view:1.3.0")
 
-    // Přidáno: Material Icons Extended
+    // Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended:1.3.1")
 
-    // ML Kit pro Image Labeling
+    // ML Kit - On-device
     implementation("com.google.mlkit:image-labeling:17.0.7")
-
     implementation("com.google.mlkit:object-detection:17.0.2")
 
-    // To recognize Latin script
+    // Text Recognition - Multi-language
     implementation("com.google.mlkit:text-recognition:16.0.1")
-
-    // To recognize Chinese script
     implementation("com.google.mlkit:text-recognition-chinese:16.0.1")
-
-    // To recognize Devanagari script
     implementation("com.google.mlkit:text-recognition-devanagari:16.0.1")
-
-    // To recognize Japanese script
     implementation("com.google.mlkit:text-recognition-japanese:16.0.1")
-
-    // To recognize Korean script
     implementation("com.google.mlkit:text-recognition-korean:16.0.1")
     implementation("com.google.mlkit:vision-common:17.3.0")
 
-    // Coil
+    // Coil - Image loading
     implementation("io.coil-kt:coil-compose:2.2.2")
 
+    // Firebase - Cloud-based ML
+    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+    implementation("com.google.firebase:firebase-analytics")
+
+    // For HTTP requests
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // For JSON parsing
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,4 +104,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-
+apply(plugin = "com.google.gms.google-services")

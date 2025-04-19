@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                         composable("results/{detectedLabels}/{imageUri}") { backStackEntry ->
                             val labelsString = backStackEntry.arguments?.getString("detectedLabels") ?: ""
                             val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
-                            val labels = if (labelsString.isNotEmpty()) labelsString.split("|") else emptyList()
+                            val labels = if (labelsString == "none") emptyList() else labelsString.split("|")
                             ImageLabelingResultScreen(navController, imageUri, labels)
                         }
                         composable("object_detection_results/{detectedResults}/{imageUri}") { backStackEntry ->

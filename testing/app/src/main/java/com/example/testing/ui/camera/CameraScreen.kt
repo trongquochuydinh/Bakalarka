@@ -31,6 +31,7 @@ fun CameraScreen(
 ) {
     val context = LocalContext.current
     val cameraManager = remember { CameraManager(context) }
+    var isProcessing by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -74,6 +75,8 @@ fun CameraScreen(
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Button(
                             onClick = {
+                                // Set the state to true immediately so the UI updates (button disabled, spinner visible)
+                                isProcessing = true
                                 cameraManager.takePhoto(cameraExecutor) { uri ->
                                     uri?.let {
                                         val processorType = when (selectedModel) {
@@ -83,28 +86,44 @@ fun CameraScreen(
                                             else -> MLKitManager.ProcessorType.IMAGE_LABELING
                                         }
                                         mlKitManager.processImage(context, it, processorType) { results ->
-                                            val encodedResults = Uri.encode(results.joinToString("|"))
+                                            // Process results, route to your next screen
+                                            val resultText = if (results.isEmpty()) "none" else results.joinToString("|")
+                                            val encodedResults = Uri.encode(resultText)
                                             val encodedUri = Uri.encode(it.toString())
+
                                             when (selectedModel) {
                                                 "Object Detection" -> navController.navigate("object_detection_results/$encodedResults/$encodedUri")
                                                 "Text Recognition" -> navController.navigate("text_recognition_results/$encodedResults/$encodedUri")
                                                 else -> navController.navigate("results/$encodedResults/$encodedUri")
                                             }
+                                            // Reset isProcessing now that processing is finished.
+                                            isProcessing = false
                                         }
+                                    } ?: run {
+                                        // Also reset isProcessing on error.
+                                        isProcessing = false
                                     }
                                 }
                             },
+                            enabled = !isProcessing,
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                             modifier = Modifier.size(72.dp),
                             contentPadding = PaddingValues(0.dp)
                         ) {
-                            Icon(
-                                Icons.Filled.CameraAlt,
-                                contentDescription = "Capture",
-                                tint = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.size(36.dp)
-                            )
+                            if (isProcessing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(36.dp),
+                                    color = MaterialTheme.colorScheme.onSecondary
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Filled.CameraAlt,
+                                    contentDescription = "Capture",
+                                    tint = MaterialTheme.colorScheme.onSecondary,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
                         }
                     }
                 }
