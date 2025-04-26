@@ -2,15 +2,14 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.testing"
+    namespace = "cz.zcu.kiv.dinh"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.testing"
+        applicationId = "cz.zcu.kiv.dinh"
         minSdk = 29
         targetSdk = 35
         versionCode = 1
@@ -103,5 +102,3 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
-
-apply(plugin = "com.google.gms.google-services")
