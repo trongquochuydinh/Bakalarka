@@ -52,12 +52,17 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
 
                     NavHost(navController = navController, startDestination = "help") {
+                        val hasCameraPermission = ContextCompat.checkSelfPermission(
+                            this@MainActivity, Manifest.permission.CAMERA
+                        ) == PackageManager.PERMISSION_GRANTED
+
                         composable("camera") {
                             CameraScreen(
                                 navController = navController,
                                 cameraExecutor = cameraExecutor,
                                 selectedModel = selectedModel,
-                                onModelSelected = { selectedModel = it }
+                                onModelSelected = { selectedModel = it },
+                                hasCameraPermission = hasCameraPermission
                             )
                         }
                         composable("results/{detectedLabels}/{imageUri}/{processingTime}") { backStackEntry ->

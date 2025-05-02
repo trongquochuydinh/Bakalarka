@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,7 +34,8 @@ fun CameraScreen(
     navController: NavController,
     cameraExecutor: ExecutorService,
     selectedModel: String,
-    onModelSelected: (String) -> Unit
+    onModelSelected: (String) -> Unit,
+    hasCameraPermission: Boolean
 ) {
     val context = LocalContext.current
     val cameraManager = remember { CameraManager(context) }
@@ -159,7 +161,7 @@ fun CameraScreen(
                                     }
                                 }
                             },
-                            enabled = !isProcessing,
+                            enabled = !isProcessing && hasCameraPermission,
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                             modifier = Modifier.size(72.dp),
@@ -191,12 +193,36 @@ fun CameraScreen(
                 .background(Color(0xFF625A5A)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AndroidView(
-                factory = { cameraManager.startCamera() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
+            if (hasCameraPermission) {
+                AndroidView(
+                    factory = { cameraManager.startCamera() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Block,
+                        contentDescription = "No Camera Permission",
+                        tint = Color.Red.copy(alpha = 0.6f),
+                        modifier = Modifier.size(72.dp)
+                    )
+                    Text(
+                        text = "K použití kamery nejsou udělena oprávnění.",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
         }
     }
 }
