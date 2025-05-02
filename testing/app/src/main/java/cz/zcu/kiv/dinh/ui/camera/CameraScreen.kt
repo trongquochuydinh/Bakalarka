@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.*
@@ -21,6 +22,11 @@ import androidx.navigation.NavController
 import cz.zcu.kiv.dinh.ml.MLKitManager
 import cz.zcu.kiv.dinh.ui.components.TopBarWithMenu
 import java.util.concurrent.ExecutorService
+import android.content.Intent
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 
 @Composable
 fun CameraScreen(
@@ -40,8 +46,36 @@ fun CameraScreen(
     }
 
     val mlKitManager = remember { MLKitManager() }
-
     val models = listOf("Image Labeling", "Text Recognition", "Object Detection")
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            isProcessing = true
+
+            val normalizedUri = cameraManager.normalizeImage(context, it)  // 💡 přidáno
+
+            val processorType = when (selectedModel) {
+                "Image Labeling" -> MLKitManager.ProcessorType.IMAGE_LABELING
+                "Object Detection" -> MLKitManager.ProcessorType.OBJECT_DETECTION
+                "Text Recognition" -> MLKitManager.ProcessorType.TEXT_RECOGNITION
+                else -> MLKitManager.ProcessorType.IMAGE_LABELING
+            }
+            mlKitManager.processImage(context, normalizedUri, processorType) { results, processingTime ->
+                val resultText = if (results.isEmpty()) "none" else results.joinToString("|")
+                val encodedResults = Uri.encode(resultText)
+                val encodedUri = Uri.encode(normalizedUri.toString())
+                val encodedProcessingTime = Uri.encode(processingTime.toString())
+                when (selectedModel) {
+                    "Object Detection" -> navController.navigate("object_detection_results/$encodedResults/$encodedUri/$encodedProcessingTime")
+                    "Text Recognition" -> navController.navigate("text_recognition_results/$encodedResults/$encodedUri/$encodedProcessingTime")
+                    else -> navController.navigate("results/$encodedResults/$encodedUri/$encodedProcessingTime")
+                }
+                isProcessing = false
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.background(MaterialTheme.colorScheme.primary),
@@ -72,10 +106,32 @@ fun CameraScreen(
                 }
 
                 BottomAppBar {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Button(
+                            onClick = { galleryLauncher.launch("image/*") },
+                            enabled = !isProcessing,
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .size(56.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Image,
+                                contentDescription = "Upload",
+                                tint = MaterialTheme.colorScheme.onSecondary,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+
                         Button(
                             onClick = {
-                                // Set the state to true immediately so the UI updates (button disabled, spinner visible)
                                 isProcessing = true
                                 cameraManager.takePhoto(cameraExecutor) { uri ->
                                     uri?.let {
@@ -85,22 +141,20 @@ fun CameraScreen(
                                             "Text Recognition" -> MLKitManager.ProcessorType.TEXT_RECOGNITION
                                             else -> MLKitManager.ProcessorType.IMAGE_LABELING
                                         }
-                                        mlKitManager.processImage(context, it, processorType) { results ->
-                                            // Process results, route to your next screen
+                                        mlKitManager.processImage(context, it, processorType) { results, processingTime ->
                                             val resultText = if (results.isEmpty()) "none" else results.joinToString("|")
                                             val encodedResults = Uri.encode(resultText)
                                             val encodedUri = Uri.encode(it.toString())
+                                            val encodedProcessingTime = Uri.encode(processingTime.toString())
 
                                             when (selectedModel) {
-                                                "Object Detection" -> navController.navigate("object_detection_results/$encodedResults/$encodedUri")
-                                                "Text Recognition" -> navController.navigate("text_recognition_results/$encodedResults/$encodedUri")
-                                                else -> navController.navigate("results/$encodedResults/$encodedUri")
+                                                "Object Detection" -> navController.navigate("object_detection_results/$encodedResults/$encodedUri/$encodedProcessingTime")
+                                                "Text Recognition" -> navController.navigate("text_recognition_results/$encodedResults/$encodedUri/$encodedProcessingTime")
+                                                else -> navController.navigate("results/$encodedResults/$encodedUri/$encodedProcessingTime")
                                             }
-                                            // Reset isProcessing now that processing is finished.
                                             isProcessing = false
                                         }
                                     } ?: run {
-                                        // Also reset isProcessing on error.
                                         isProcessing = false
                                     }
                                 }
@@ -146,3 +200,5 @@ fun CameraScreen(
         }
     }
 }
+
+

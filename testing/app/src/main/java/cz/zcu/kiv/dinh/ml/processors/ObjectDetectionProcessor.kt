@@ -24,7 +24,11 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 class ObjectDetectionProcessor : BaseMLProcessor() {
-    override fun processImage(context: Context, imageUri: Uri, onResult: (List<String>) -> Unit) {
+    override fun processImage(
+        context: Context,
+        imageUri: Uri,
+        onResult: (List<String>, Long) -> Unit
+    ) {
         if (ObjectDetectionConfig.useCloudModel) {
             processWithCloudVisionAPI(context, imageUri, onResult)
         } else {
@@ -36,8 +40,12 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
                     .enableClassification() // Enables labels (if available)
                     .build()
                 val objectDetector = ObjectDetection.getClient(options)
+                val startTime = System.currentTimeMillis()
                 objectDetector.process(image)
                     .addOnSuccessListener { detectedObjects ->
+                        val endTime = System.currentTimeMillis()
+                        val processingTime = endTime - startTime
+
                         val detectionResults = mutableListOf<String>()
                         for (detectedObject in detectedObjects) {
                             val boundingBox: Rect = detectedObject.boundingBox
@@ -56,22 +64,26 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
                             detectionResults.add(resultString)
                         }
                         Toast.makeText(context, "Object detection completed", Toast.LENGTH_SHORT).show()
-                        onResult(detectionResults)
+                        onResult(detectionResults, processingTime)
                     }
                     .addOnFailureListener { e ->
                         Log.e("ObjectDetection", "Object detection failed", e)
                         Toast.makeText(context, "Error during object detection", Toast.LENGTH_SHORT).show()
-                        onResult(emptyList())
+                        onResult(emptyList(), 0)
                     }
             } catch (e: Exception) {
                 Log.e("ObjectDetection", "Failed to process image", e)
                 Toast.makeText(context, "Error processing image", Toast.LENGTH_SHORT).show()
-                onResult(emptyList())
+                onResult(emptyList(), 0)
             }
         }
     }
 
-    private fun processWithCloudVisionAPI(context: Context, imageUri: Uri, onResult: (List<String>) -> Unit) {
+    override fun processWithCloudVisionAPI(
+        context: Context,
+        imageUri: Uri,
+        onResult: (List<String>, Long) -> Unit
+    ) {
         try {
             // Convert image to Base64 string
             val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
@@ -87,6 +99,7 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
             val request: Request = CloudVisionUtils.buildRequest(jsonBody)
 
             val client = OkHttpClient()
+            val startTime = System.currentTimeMillis()
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: okhttp3.Call, e: IOException) {
                     Log.e("CloudVision", "Request failed", e)
@@ -96,6 +109,9 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
                 }
 
                 override fun onResponse(call: okhttp3.Call, response: Response) {
+                    val endTime = System.currentTimeMillis()
+                    val processingTime = endTime - startTime
+
                     val responseBody = response.body?.string() ?: ""
                     try {
                         val json = JSONObject(responseBody)
@@ -103,10 +119,10 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
                             json,
                             ObjectDetectionConfig.minConfidencePercentage,
                             width,
-                            height // ✅ Pass dimensions here
+                            height
                         )
                         Handler(Looper.getMainLooper()).post {
-                            onResult(results)
+                            onResult(results, processingTime)
                             Toast.makeText(context, "Object detection (cloud) completed", Toast.LENGTH_SHORT).show()
                         }
                     } catch (e: Exception) {
@@ -120,7 +136,7 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
         } catch (e: Exception) {
             Log.e("CloudVision", "Error converting image", e)
             Toast.makeText(context, "Error processing image", Toast.LENGTH_SHORT).show()
-            onResult(emptyList())
+            onResult(emptyList(), 0)
         }
     }
 }

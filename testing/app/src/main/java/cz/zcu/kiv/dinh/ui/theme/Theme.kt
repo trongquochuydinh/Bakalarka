@@ -20,7 +20,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun TestingTheme(
+fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(), // Use system setting or pass manually
     content: @Composable () -> Unit
 ) {

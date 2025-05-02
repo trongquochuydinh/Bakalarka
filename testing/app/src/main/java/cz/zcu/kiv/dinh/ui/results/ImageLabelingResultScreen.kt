@@ -22,7 +22,8 @@ data class LabelItem(val text: String, val confidence: Int)
 fun ImageLabelingResultScreen(
     navController: NavController,
     imageUri: String,
-    detectedLabels: List<String>
+    detectedLabels: List<String>,
+    processingTime: Float
 ) {
     var sortAscending by remember { mutableStateOf(false) }
     var showImage by remember { mutableStateOf(false) }
@@ -79,6 +80,13 @@ fun ImageLabelingResultScreen(
                     "Model: Cloud" else "Model: On-Device",
                 color = Color.LightGray,
                 style = MaterialTheme.typography.bodySmall
+            )
+
+            Text(
+                text = "Processing Time: ${processingTime} ms",
+                color = Color.LightGray,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(vertical = 4.dp)
             )
 
             // Show Image if toggled

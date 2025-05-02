@@ -27,7 +27,7 @@ class ImageLabelingProcessor : BaseMLProcessor() {
     override fun processImage(
         context: Context,
         imageUri: Uri,
-        onResult: (List<String>) -> Unit
+        onResult: (List<String>, Long) -> Unit
     ) {
         if (ImageLabelingConfig.useCloudModel) {
             processWithCloudVisionAPI(context, imageUri, onResult)
@@ -37,13 +37,15 @@ class ImageLabelingProcessor : BaseMLProcessor() {
                 .setConfidenceThreshold(ImageLabelingConfig.minConfidencePercentage / 100.0f)
                 .build()
             val labeler = ImageLabeling.getClient(options)
-
+            val startTime = System.currentTimeMillis()
             labeler.process(image)
                 .addOnSuccessListener { labels ->
+                    val endTime = System.currentTimeMillis()
+                    val processingTime = endTime - startTime
                     val labelTexts = labels.map { label ->
                         "${label.text} (${(label.confidence * 100).toInt()}%)"
                     }
-                    onResult(labelTexts)
+                    onResult(labelTexts, processingTime)
                     Toast.makeText(context, "Detekce dokončena", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { e ->
@@ -53,10 +55,10 @@ class ImageLabelingProcessor : BaseMLProcessor() {
         }
     }
 
-    private fun processWithCloudVisionAPI(
+    override fun processWithCloudVisionAPI(
         context: Context,
         imageUri: Uri,
-        onResult: (List<String>) -> Unit
+        onResult: (List<String>, Long) -> Unit
     ) {
         // Convert image to Base64 string
         val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
@@ -69,6 +71,7 @@ class ImageLabelingProcessor : BaseMLProcessor() {
         val request: Request = CloudVisionUtils.buildRequest(jsonBody)
 
         val client = OkHttpClient()
+        val startTime = System.currentTimeMillis()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: okhttp3.Call, e: IOException) {
                 Log.e("CloudVision", "Request failed", e)
@@ -78,6 +81,8 @@ class ImageLabelingProcessor : BaseMLProcessor() {
             }
 
             override fun onResponse(call: okhttp3.Call, response: Response) {
+                val endTime = System.currentTimeMillis()
+                val processingTime = endTime - startTime
                 val responseBody = response.body?.string() ?: ""
                 try {
                     val json = JSONObject(responseBody)
@@ -85,7 +90,7 @@ class ImageLabelingProcessor : BaseMLProcessor() {
                         json, ImageLabelingConfig.minConfidencePercentage
                     )
                     Handler(Looper.getMainLooper()).post {
-                        onResult(results)
+                        onResult(results, processingTime)
                         Toast.makeText(context, "Detekce (cloud) dokončena", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {

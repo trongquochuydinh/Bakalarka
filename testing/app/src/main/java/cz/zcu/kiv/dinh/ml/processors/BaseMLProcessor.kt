@@ -8,6 +8,12 @@ abstract class BaseMLProcessor {
     abstract fun processImage(
         context: Context,
         imageUri: Uri,
-        onResult: (List<String>) -> Unit
+        onResult: (List<String>, Long) -> Unit
+    )
+
+    abstract fun processWithCloudVisionAPI(
+        context: Context,
+        imageUri: Uri,
+        onResult: (List<String>, Long) -> Unit
     )
 }

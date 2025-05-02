@@ -17,7 +17,7 @@ class MLKitManager {
         context: Context,
         imageUri: Uri,
         processorType: ProcessorType,
-        onResult: (List<String>) -> Unit
+        onResult: (List<String>, Long) -> Unit
     ) {
         when (processorType) {
             ProcessorType.IMAGE_LABELING -> imageLabelingProcessor.processImage(context, imageUri, onResult)

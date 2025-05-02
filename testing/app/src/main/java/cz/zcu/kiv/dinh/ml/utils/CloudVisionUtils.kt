@@ -11,7 +11,7 @@ import cz.zcu.kiv.dinh.ml.configs.TextRecognitionConfig
 
 object CloudVisionUtils {
     // Always consider storing your API key securely via build configs or secured storage.
-    private const val API_KEY = "YOUR_API_KEY"
+    private const val API_KEY = "AIzaSyDTpLFdZIYxMsCxGdTtES2oze3801PFSgQ"
     private const val BASE_URL = "https://vision.googleapis.com/v1/images:annotate"
 
     /**
@@ -32,7 +32,7 @@ object CloudVisionUtils {
               "features": [
                 {
                   "type": "$featureType",
-                  "maxResults": $maxResults
+                      "maxResults": $maxResults
                 }
               ]
             }

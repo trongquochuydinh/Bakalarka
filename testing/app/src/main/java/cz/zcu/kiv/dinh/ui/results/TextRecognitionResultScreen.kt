@@ -19,7 +19,8 @@ import cz.zcu.kiv.dinh.ui.components.CoordTable
 fun TextRecognitionResultScreen(
     navController: NavController,
     imageUri: String,
-    detectedResults: List<String>
+    detectedResults: List<String>,
+    processingTime: Float
 ) {
     val boxes = remember(detectedResults) {
         detectedResults.mapNotNull { result ->
@@ -66,6 +67,13 @@ fun TextRecognitionResultScreen(
                     "Model: Cloud" else "Model: On-Device",
                 color = Color.LightGray,
                 style = MaterialTheme.typography.bodySmall
+            )
+
+            Text(
+                text = "Processing Time: ${processingTime} ms",
+                color = Color.LightGray,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(vertical = 4.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))

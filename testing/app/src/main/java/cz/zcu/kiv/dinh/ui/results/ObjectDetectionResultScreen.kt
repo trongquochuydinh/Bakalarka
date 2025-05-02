@@ -19,7 +19,8 @@ import androidx.compose.ui.Alignment
 fun ObjectDetectionResultScreen(
     navController: NavController,
     imageUri: String,
-    detectionResults: List<String>
+    detectionResults: List<String>,
+    processingTime: Float
 ) {
     data class Detection(val label: String, val box: ComposeRect)
 
@@ -71,6 +72,13 @@ fun ObjectDetectionResultScreen(
                     "Model: Cloud" else "Model: On-Device",
                 color = Color.LightGray,
                 style = MaterialTheme.typography.bodySmall
+            )
+
+            Text(
+                text = "Processing Time: ${processingTime} ms",
+                color = Color.LightGray,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(vertical = 4.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))

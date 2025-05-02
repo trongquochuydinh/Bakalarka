@@ -23,7 +23,7 @@ import cz.zcu.kiv.dinh.ui.results.TextRecognitionResultScreen
 import cz.zcu.kiv.dinh.ui.settings.HelpScreen
 import cz.zcu.kiv.dinh.ui.settings.VisualSettingsScreen
 import cz.zcu.kiv.dinh.ui.settings.ModelSettingsScreen
-import cz.zcu.kiv.dinh.ui.theme.TestingTheme
+import cz.zcu.kiv.dinh.ui.theme.AppTheme
 import cz.zcu.kiv.dinh.ui.theme.ThemeManager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                 var isDarkTheme by rememberSaveable { mutableStateOf(savedTheme) }
                 var selectedModel by rememberSaveable { mutableStateOf("Image Labeling") }
 
-                TestingTheme(darkTheme = isDarkTheme) {
+                AppTheme(darkTheme = isDarkTheme) {
                     val navController = rememberNavController()
 
                     NavHost(navController = navController, startDestination = "help") {
@@ -60,23 +60,29 @@ class MainActivity : ComponentActivity() {
                                 onModelSelected = { selectedModel = it }
                             )
                         }
-                        composable("results/{detectedLabels}/{imageUri}") { backStackEntry ->
+                        composable("results/{detectedLabels}/{imageUri}/{processingTime}") { backStackEntry ->
                             val labelsString = backStackEntry.arguments?.getString("detectedLabels") ?: ""
                             val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
+                            val processingTimeString = backStackEntry.arguments?.getString("processingTime") ?: ""
                             val labels = if (labelsString == "none") emptyList() else labelsString.split("|")
-                            ImageLabelingResultScreen(navController, imageUri, labels)
+                            val processingTime = processingTimeString.toFloatOrNull() ?: 0f
+                            ImageLabelingResultScreen(navController, imageUri, labels, processingTime)
                         }
-                        composable("object_detection_results/{detectedResults}/{imageUri}") { backStackEntry ->
+                        composable("object_detection_results/{detectedResults}/{imageUri}/{processingTime}") { backStackEntry ->
                             val resultsString = backStackEntry.arguments?.getString("detectedResults") ?: ""
                             val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
+                            val processingTimeString = backStackEntry.arguments?.getString("processingTime") ?: ""
+                            val processingTime = processingTimeString.toFloatOrNull() ?: 0f
                             val results = if (resultsString.isNotEmpty()) resultsString.split("|") else emptyList()
-                            ObjectDetectionResultScreen(navController, imageUri, results)
+                            ObjectDetectionResultScreen(navController, imageUri, results, processingTime)
                         }
-                        composable("text_recognition_results/{detectedResults}/{imageUri}") { backStackEntry ->
+                        composable("text_recognition_results/{detectedResults}/{imageUri}/{processingTime}") { backStackEntry ->
                             val resultsString = backStackEntry.arguments?.getString("detectedResults") ?: ""
                             val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
+                            val processingTimeString = backStackEntry.arguments?.getString("processingTime") ?: ""
+                            val processingTime = processingTimeString.toFloatOrNull() ?: 0f
                             val results = if (resultsString.isNotEmpty()) resultsString.split("|") else emptyList()
-                            TextRecognitionResultScreen(navController, imageUri, results)
+                            TextRecognitionResultScreen(navController, imageUri, results, processingTime)
                         }
                         composable("visual_settings") {
                             VisualSettingsScreen(navController, isDarkTheme) { newTheme ->
