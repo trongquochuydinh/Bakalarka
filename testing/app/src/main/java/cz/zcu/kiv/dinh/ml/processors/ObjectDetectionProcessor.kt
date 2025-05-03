@@ -60,8 +60,10 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
                                 0
                             }
                             // Format: "Label (Confidence%) - Box: [left, top, right, bottom]"
-                            val resultString = "$label ($confidence%) - Box: [${boundingBox.left}, ${boundingBox.top}, ${boundingBox.right}, ${boundingBox.bottom}]"
-                            detectionResults.add(resultString)
+                            if (confidence >= ObjectDetectionConfig.minConfidencePercentage) {
+                                val resultString = "$label ($confidence%) - Box: [${boundingBox.left}, ${boundingBox.top}, ${boundingBox.right}, ${boundingBox.bottom}]"
+                                detectionResults.add(resultString)
+                            }
                         }
                         Toast.makeText(context, "Object detection completed", Toast.LENGTH_SHORT).show()
                         onResult(detectionResults, processingTime)

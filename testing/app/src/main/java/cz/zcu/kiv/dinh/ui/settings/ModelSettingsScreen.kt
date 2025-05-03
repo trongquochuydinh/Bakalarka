@@ -111,16 +111,17 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
             HorizontalDivider(color = Color.DarkGray)
             Spacer(modifier = Modifier.height(16.dp))
 
-            var sliderValue by remember { mutableFloatStateOf(ImageLabelingConfig.minConfidencePercentage.toFloat()) }
+
 
             Text("Image Labeling Settings", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Minimum Confidence: ${sliderValue.toInt()}%")
+            var sliderImageLabelingValue by remember { mutableFloatStateOf(ImageLabelingConfig.minConfidencePercentage.toFloat()) }
+            Text(text = "Minimum Confidence: ${sliderImageLabelingValue.toInt()}%")
             Slider(
-                value = sliderValue,
+                value = sliderImageLabelingValue,
                 onValueChange = { newValue ->
-                    sliderValue = newValue
+                    sliderImageLabelingValue = newValue
                     ImageLabelingConfig.minConfidencePercentage = newValue.toInt()
                 },
                 valueRange = 0f..100f,
@@ -150,6 +151,20 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text("Object Detection Settings", style = MaterialTheme.typography.titleMedium)
+
+            var sliderObjectDetectionValue by remember { mutableFloatStateOf(ObjectDetectionConfig.minConfidencePercentage.toFloat()) }
+            Text(text = "Minimum Confidence: ${sliderObjectDetectionValue.toInt()}%")
+            Slider(
+                value = sliderObjectDetectionValue,
+                onValueChange = { newValue ->
+                    sliderObjectDetectionValue = newValue
+                    ObjectDetectionConfig.minConfidencePercentage = newValue.toInt()
+                },
+                valueRange = 0f..100f,
+                steps = 99,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
