@@ -16,7 +16,7 @@ import cz.zcu.kiv.dinh.ml.configs.TextRecognitionConfig
  */
 object CloudVisionUtils {
     // ⚠️ V produkční aplikaci je doporučeno uchovávat klíč bezpečně (např. v build configu).
-    private const val API_KEY = "AIzaSyDTpLFdZIYxMsCxGdTtES2oze3801PFSgQ"
+    private const val API_KEY = "YOUR_API_KEY"
     private const val BASE_URL = "https://vision.googleapis.com/v1/images:annotate"
 
     /**

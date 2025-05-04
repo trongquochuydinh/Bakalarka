@@ -53,10 +53,9 @@ fun ObjectDetectionResultScreen(
         }
     }
 
-    val boxes = detections.map { it.box }
-    var selectedBoxIndex by remember { mutableStateOf<Int?>(null) }
-    var showCoords by remember { mutableStateOf(true) }
-
+    val boxes = detections.map { it.box } // Extrakce pouze ohraničujících boxů
+    var selectedBoxIndex by remember { mutableStateOf<Int?>(null) } // Index vybraného boxu
+    var showCoords by remember { mutableStateOf(true) } // Zobrazení/skrytí souřadnic
 
     Scaffold(
         topBar = { TopBarWithMenu(navController, title = "Object Detection Results") },
