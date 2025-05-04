@@ -16,8 +16,23 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import cz.zcu.kiv.dinh.ui.components.TopBarWithMenu
 
+/**
+ * Datová třída pro položku detekovaného štítku (label).
+ *
+ * @property text Název detekovaného objektu/štítku
+ * @property confidence Pravděpodobnost (v %) s jakou byl štítek rozpoznán
+ */
 data class LabelItem(val text: String, val confidence: Int)
 
+/**
+ * Obrazovka pro zobrazení výsledků označování obrázků.
+ * Umožňuje zobrazení seznamu detekovaných štítků, jejich třídění podle pravděpodobnosti a zobrazení původního obrázku.
+ *
+ * @param navController Navigace zpět
+ * @param imageUri URI obrázku, který byl analyzován
+ * @param detectedLabels Výsledky detekce ve formátu "label (confidence%)"
+ * @param processingTime Doba zpracování v milisekundách
+ */
 @Composable
 fun ImageLabelingResultScreen(
     navController: NavController,
@@ -25,12 +40,12 @@ fun ImageLabelingResultScreen(
     detectedLabels: List<String>,
     processingTime: Float
 ) {
-    var sortAscending by remember { mutableStateOf(false) }
-    var showImage by remember { mutableStateOf(false) }
+    var sortAscending by remember { mutableStateOf(false) } // Řazení dle pravděpodobnosti
+    var showImage by remember { mutableStateOf(false) } // Zobrazení/skrytí původního obrázku
 
+    // Převedení vstupních řetězců na objekty LabelItem
     val labelItems = remember(detectedLabels) {
         detectedLabels.map { label ->
-            // More robust parsing logic that handles different label formats
             val parts = label.split("(", ")")
             val labelText = parts[0].trim()
             val confidenceText = parts.getOrElse(1) { "0%" }.replace("%", "").trim()
@@ -39,7 +54,7 @@ fun ImageLabelingResultScreen(
         }
     }
 
-    // Remember sorted items to prevent unnecessary resorting
+    // Řazení seznamu dle vybraného směru
     val sortedItems = remember(labelItems, sortAscending) {
         labelItems.sortedWith(compareBy {
             if (sortAscending) it.confidence else -it.confidence
@@ -57,7 +72,7 @@ fun ImageLabelingResultScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Image Toggle + Sort Buttons
+            // Tlačítka pro zobrazení obrázku a řazení
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -75,6 +90,7 @@ fun ImageLabelingResultScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Zobrazení typu použitého modelu
             Text(
                 text = if (cz.zcu.kiv.dinh.ml.configs.ImageLabelingConfig.useCloudModel)
                     "Model: Cloud" else "Model: On-Device",
@@ -82,6 +98,7 @@ fun ImageLabelingResultScreen(
                 style = MaterialTheme.typography.bodySmall
             )
 
+            // Zobrazení doby zpracování
             Text(
                 text = "Processing Time: ${processingTime} ms",
                 color = Color.LightGray,
@@ -89,7 +106,7 @@ fun ImageLabelingResultScreen(
                 modifier = Modifier.padding(vertical = 4.dp)
             )
 
-            // Show Image if toggled
+            // Zobrazení původního obrázku (pokud je aktivní)
             if (showImage) {
                 AsyncImage(
                     model = imageUri,
@@ -101,7 +118,7 @@ fun ImageLabelingResultScreen(
                 )
             }
 
-            // Table Header
+            // Hlavička tabulky
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -124,7 +141,7 @@ fun ImageLabelingResultScreen(
 
             HorizontalDivider(color = Color.LightGray)
 
-            // Table Rows
+            // Zobrazení detekovaných štítků
             if (sortedItems.isEmpty()) {
                 Text(
                     text = "No labels detected.",

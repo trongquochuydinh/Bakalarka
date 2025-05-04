@@ -6,6 +6,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.navigation.NavController
 
+/**
+ * Vrchní panel s ikonou menu, které umožňuje navigaci mezi hlavními obrazovkami aplikace.
+ *
+ * @param navController Navigační kontroler Jetpack Navigation komponenty.
+ * @param title Titulek, který se zobrazí ve vrchním panelu.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBarWithMenu(navController: NavController, title: String) {
@@ -17,6 +23,8 @@ fun TopBarWithMenu(navController: NavController, title: String) {
             IconButton(onClick = { expanded = true }) {
                 Icon(Icons.Default.Menu, contentDescription = "Menu")
             }
+
+            // Dropdown menu s položkami pro navigaci
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
@@ -25,11 +33,8 @@ fun TopBarWithMenu(navController: NavController, title: String) {
                     text = { Text("Home") },
                     onClick = {
                         expanded = false
-                        // Navigate to Camera screen
                         navController.navigate("camera") {
-                            // Pop up to Help, but don't remove it (inclusive = false)
                             popUpTo("help") { inclusive = false }
-                            // Avoid multiple instances of Camera in backstack
                             launchSingleTop = true
                         }
                     }

@@ -22,6 +22,17 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size as CoilSize
 
+/**
+ * Zobrazí obrázek s překrytím ohraničujících rámečků (bounding boxes).
+ *
+ * @param imageUri URI obrázku k zobrazení.
+ * @param boundingBoxes Seznam rámečků, které budou překresleny přes obrázek.
+ * @param selectedIndex Volitelný index zvýrazněného rámečku (např. po kliknutí).
+ * @param modifier Volitelný Compose modifier.
+ * @param boxColor Barva běžného rámečku.
+ * @param highlightColor Barva zvýrazněného rámečku.
+ * @param strokeWidth Tloušťka rámečku v dp.
+ */
 @SuppressLint("UnusedBoxWithConstraintsScope", "ModifierParameter")
 @Composable
 fun BoundingBoxOverlay(
@@ -36,6 +47,7 @@ fun BoundingBoxOverlay(
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     val context = LocalContext.current
 
+    // Vykreslení obrázku pomocí Coil knihovny
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(context)
             .data(imageUri)
@@ -48,6 +60,7 @@ fun BoundingBoxOverlay(
     var originalWidth by remember { mutableFloatStateOf(0f) }
     var originalHeight by remember { mutableFloatStateOf(0f) }
 
+    // Získání původní velikosti obrázku při načtení
     LaunchedEffect(painterState) {
         if (painterState is AsyncImagePainter.State.Success) {
             painterState.result.drawable.let {
@@ -81,6 +94,7 @@ fun BoundingBoxOverlay(
                 val offsetX = (imageSize.width - originalWidth * scaleFactor) / 2f
                 val offsetY = (imageSize.height - originalHeight * scaleFactor) / 2f
 
+                // Vykreslení každého rámečku včetně zvýraznění vybraného
                 boundingBoxes.forEachIndexed { index, box ->
                     val scaledLeft = box.left * scaleFactor + offsetX
                     val scaledTop = box.top * scaleFactor + offsetY

@@ -9,17 +9,22 @@ import org.json.JSONObject
 
 import cz.zcu.kiv.dinh.ml.configs.TextRecognitionConfig
 
+
+/**
+ * Pomocné metody pro komunikaci s Google Cloud Vision API.
+ * Zahrnuje vytváření požadavků a parsování odpovědí pro různé typy detekce.
+ */
 object CloudVisionUtils {
-    // Always consider storing your API key securely via build configs or secured storage.
+    // ⚠️ V produkční aplikaci je doporučeno uchovávat klíč bezpečně (např. v build configu).
     private const val API_KEY = "AIzaSyDTpLFdZIYxMsCxGdTtES2oze3801PFSgQ"
     private const val BASE_URL = "https://vision.googleapis.com/v1/images:annotate"
 
     /**
-     * Creates a standardized JSON payload for the Cloud Vision API request.
+     * Vytvoří JSON payload pro Cloud Vision API požadavek.
      *
-     * @param base64Image the Base64-encoded image string.
-     * @param featureType one of: "LABEL_DETECTION", "TEXT_DETECTION", "OBJECT_LOCALIZATION".
-     * @param maxResults maximum number of results.
+     * @param base64Image Obrázek ve formátu Base64
+     * @param featureType Typ požadované detekce: "LABEL_DETECTION", "TEXT_DETECTION", "OBJECT_LOCALIZATION"
+     * @param maxResults Maximální počet výsledků
      */
     fun createRequestPayload(base64Image: String, featureType: String, maxResults: Int = 10): String {
         return """
@@ -42,7 +47,7 @@ object CloudVisionUtils {
     }
 
     /**
-     * Builds an OkHttp Request using the provided JSON payload and the stored API key.
+     * Sestaví HTTP požadavek pro Cloud Vision API pomocí zadaného JSON těla.
      */
     fun buildRequest(jsonBody: String): Request {
         val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
@@ -53,8 +58,7 @@ object CloudVisionUtils {
     }
 
     /**
-     * Parses a Cloud Vision label detection response and returns a list of formatted strings.
-     * Format: "Label (Confidence%)".
+     * Zpracuje odpověď pro label detekci a vrátí seznam ve formátu "Label (Confidence%)".
      */
     fun parseLabelResponse(response: JSONObject, minConfidence: Int): List<String> {
         val results = mutableListOf<String>()
@@ -73,13 +77,12 @@ object CloudVisionUtils {
     }
 
     /**
-     * Parses a Cloud Vision object localization response and returns a list of formatted strings.
-     * Format: "ObjectName (Confidence%) - Box: [left, top, right, bottom]".
+     * Zpracuje odpověď pro lokalizaci objektů a převede ji na čitelné výsledky s bounding boxem.
      */
     fun parseObjectLocalizationResponse(response: JSONObject, minConfidence: Int, imageWidth: Int, imageHeight: Int): List<String> {
         val results = mutableListOf<String>()
 
-        // ✅ DEBUG: Print entire raw API response
+        // ✅ DEBUG: Výpis celé odpovědi
         Log.d("CloudVision", "Full response:\n${response.toString(2)}")
 
         val responses = response.optJSONArray("responses")
@@ -117,8 +120,7 @@ object CloudVisionUtils {
     }
 
     /**
-     * Parses a Cloud Vision text detection response and returns a list of formatted strings.
-     * Note: Typically, textAnnotations[0] contains the full text; subsequent elements represent parts.
+     * Zpracuje odpověď z textového rozpoznávání a vytvoří seznam segmentů se souřadnicemi.
      */
     fun parseTextRecognitionResponse(response: JSONObject): List<String> {
         val results = mutableListOf<String>()
@@ -134,7 +136,7 @@ object CloudVisionUtils {
             else -> "Block"
         }
 
-        for (i in 1 until annotations.length()) { // začínáme od 1
+        for (i in 1 until annotations.length()) { // přeskočíme první (celý text)
             val annotation = annotations.getJSONObject(i)
             val description = annotation.optString("description")
             val boundingPoly = annotation.optJSONObject("boundingPoly")

@@ -22,12 +22,20 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
+/**
+ * Procesor pro rozpoznávání textu (Text Recognition).
+ * Umožňuje výběr segmentačního režimu (bloky, řádky, slova, symboly) a zvýraznění slov/symbolů.
+ */
 class TextRecognitionProcessor : BaseMLProcessor() {
-    override fun processImage(
-        context: Context,
-        imageUri: Uri,
-        onResult: (List<String>, Long) -> Unit
-    ) {
+
+    /**
+     * Zpracuje zadaný obrázek pomocí textového rozpoznávání.
+     *
+     * @param context Kontext aplikace
+     * @param imageUri URI obrázku
+     * @param onResult Callback, který vrací seznam výsledků (s popisem a bounding boxem) a dobu zpracování v ms
+     */
+    override fun processImage(context: Context, imageUri: Uri, onResult: (List<String>, Long) -> Unit) {
         Log.d("TextRecognition", "Processing image: $imageUri")
         if (TextRecognitionConfig.useCloudModel) {
             processWithCloudVisionAPI(context, imageUri, onResult)
@@ -36,14 +44,14 @@ class TextRecognitionProcessor : BaseMLProcessor() {
                 val image = InputImage.fromFilePath(context, imageUri)
                 val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
                 val startTime = System.currentTimeMillis()
+
                 recognizer.process(image)
                     .addOnSuccessListener { result ->
                         val endTime = System.currentTimeMillis()
-                        val processingTime = endTime - startTime
-
-                        Log.d("TextRecognition", "Text recognition succeeded")
                         val segments = mutableListOf<String>()
                         val mode = TextRecognitionConfig.segmentationMode.lowercase()
+
+                        // Segmentace výsledků podle zvoleného režimu
                         when (mode) {
                             "block" -> {
                                 result.textBlocks.forEach { block ->
@@ -101,11 +109,11 @@ class TextRecognitionProcessor : BaseMLProcessor() {
                                 }
                             }
                         }
-                        Log.d("TextRecognition", "Generated ${segments.size} segments")
-                        onResult(segments, processingTime)
+
+                        onResult(segments, endTime - startTime)
                     }
-                    .addOnFailureListener { e ->
-                        Log.e("TextRecognition", "Text recognition failed", e)
+                    .addOnFailureListener {
+                        Log.e("TextRecognition", "Text recognition failed", it)
                         Toast.makeText(context, "Text recognition failed", Toast.LENGTH_SHORT).show()
                         onResult(emptyList(), 0)
                     }
@@ -117,56 +125,21 @@ class TextRecognitionProcessor : BaseMLProcessor() {
         }
     }
 
-    override fun processWithCloudVisionAPI(
-        context: Context,
-        imageUri: Uri,
-        onResult: (List<String>, Long) -> Unit) {
-        try {
-            val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-            val width = bitmap.width
-            val height = bitmap.height
-
-            val outputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            val base64Image = Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
-
-            val jsonBody = CloudVisionUtils.createRequestPayload(base64Image, "TEXT_DETECTION")
-            val request: Request = CloudVisionUtils.buildRequest(jsonBody)
-
-            val client = OkHttpClient()
-            val startTime = System.currentTimeMillis()
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
-                    Log.e("CloudVision", "Request failed", e)
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(context, "Text detection (cloud) failed", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onResponse(call: okhttp3.Call, response: Response) {
-                    val endTime = System.currentTimeMillis()
-                    val processingTime = endTime - startTime
-
-                    val responseBody = response.body?.string() ?: ""
-                    try {
-                        val json = JSONObject(responseBody)
-                        val results = CloudVisionUtils.parseTextRecognitionResponse(json)
-                        Handler(Looper.getMainLooper()).post {
-                            onResult(results, processingTime)
-                            Toast.makeText(context, "Text detection (cloud) completed", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Log.e("CloudVision", "Parsing failed", e)
-                        Handler(Looper.getMainLooper()).post {
-                            Toast.makeText(context, "Error processing response", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            })
-        } catch (e: Exception) {
-            Log.e("CloudVision", "Error converting image", e)
-            Toast.makeText(context, "Error processing image", Toast.LENGTH_SHORT).show()
-            onResult(emptyList(), 0)
+    /**
+     * Zpracuje obrázek přes Google Cloud Vision API s typem "TEXT_DETECTION".
+     *
+     * @param context Kontext aplikace
+     * @param imageUri URI obrázku
+     * @param onResult Callback s výsledky a dobou zpracování
+     */
+    override fun processWithCloudVisionAPI(context: Context, imageUri: Uri, onResult: (List<String>, Long) -> Unit) {
+        processCloudRequest(
+            context, imageUri,
+            featureType = "TEXT_DETECTION",
+            maxResults = 10,
+            onResult = onResult
+        ) { json, _, _ ->
+            CloudVisionUtils.parseTextRecognitionResponse(json)
         }
     }
 }

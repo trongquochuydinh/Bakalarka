@@ -15,6 +15,15 @@ import cz.zcu.kiv.dinh.ui.components.BoundingBoxOverlay
 import cz.zcu.kiv.dinh.ui.components.CoordTable
 import androidx.compose.ui.Alignment
 
+/**
+ * Obrazovka pro zobrazení výsledků detekce objektů.
+ * Zobrazuje náhled obrázku s překryvnými ohraničujícími boxy a tabulkou souřadnic.
+ *
+ * @param navController Navigace zpět
+ * @param imageUri URI obrázku, na kterém byla detekce provedena
+ * @param detectionResults Výsledky detekce jako seznam textových řetězců (label + bounding box)
+ * @param processingTime Čas zpracování v milisekundách
+ */
 @Composable
 fun ObjectDetectionResultScreen(
     navController: NavController,
@@ -22,8 +31,10 @@ fun ObjectDetectionResultScreen(
     detectionResults: List<String>,
     processingTime: Float
 ) {
+    // Pomocná datová třída pro zpracované detekce
     data class Detection(val label: String, val box: ComposeRect)
 
+    // Parsování výsledků detekce na objekty Detection
     val detections = remember(detectionResults) {
         detectionResults.mapNotNull { result ->
             try {
@@ -56,6 +67,7 @@ fun ObjectDetectionResultScreen(
                 .background(Color(0xFF625A5A)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Komponenta pro zobrazení obrázku s překryvnými boxy
             BoundingBoxOverlay(
                 imageUri = imageUri,
                 boundingBoxes = boxes,
@@ -67,6 +79,7 @@ fun ObjectDetectionResultScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Informace o typu použitého modelu (cloud vs. offline)
             Text(
                 text = if (cz.zcu.kiv.dinh.ml.configs.ObjectDetectionConfig.useCloudModel)
                     "Model: Cloud" else "Model: On-Device",
@@ -74,6 +87,7 @@ fun ObjectDetectionResultScreen(
                 style = MaterialTheme.typography.bodySmall
             )
 
+            // Zobrazení času zpracování
             Text(
                 text = "Processing Time: ${processingTime} ms",
                 color = Color.LightGray,
@@ -83,6 +97,7 @@ fun ObjectDetectionResultScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Tlačítko pro přepínání zobrazení tabulky souřadnic
             Button(
                 onClick = { showCoords = !showCoords },
                 modifier = Modifier
@@ -92,6 +107,7 @@ fun ObjectDetectionResultScreen(
                 Text(if (showCoords) "Hide Coordinates" else "Show Coordinates")
             }
 
+            // Zobrazení tabulky souřadnic, pokud je aktivní
             if (showCoords) {
                 CoordTable(
                     boundingBoxes = boxes,

@@ -10,6 +10,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cz.zcu.kiv.dinh.ui.components.TopBarWithMenu
 
+/**
+ * Obrazovka s nápovědou pro uživatele.
+ * Popisuje jednotlivé modely (Text Recognition, Image Labeling, Object Detection),
+ * jejich funkce a tipy pro efektivní použití.
+ *
+ * @param navController Navigace zpět
+ */
 @Composable
 fun HelpScreen(navController: NavController) {
     Scaffold(
@@ -21,25 +28,25 @@ fun HelpScreen(navController: NavController) {
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            // Nadpis sekce
             Text(
                 text = "Available Models for Image Analysis",
                 style = MaterialTheme.typography.titleLarge
             )
+
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = "This application provides several models for analyzing images:",
                 style = MaterialTheme.typography.bodyMedium
             )
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Text Recognition ---
+            // Popis Text Recognition modelu
+            Text("1. Text Recognition", style = MaterialTheme.typography.titleMedium)
             Text(
-                text = "1. Text Recognition",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text =  "• Recognizes printed text from images.\n" +
+                text = "• Recognizes printed text from images.\n" +
                         "• Segments the detected text based on user selection (Block, Line, Word, or Symbol).\n" +
                         "• Highlighted rectangles represent the detected text segments.\n",
                 style = MaterialTheme.typography.bodySmall
@@ -47,32 +54,27 @@ fun HelpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Image Labeling ---
+            // Popis Image Labeling modelu
+            Text("2. Image Labeling", style = MaterialTheme.typography.titleMedium)
             Text(
-                text = "2. Image Labeling",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text =  "• Automatically labels the content of an image with predefined categories and their corresponding confidence scores.\n" +
+                text = "• Automatically labels the content of an image with predefined categories and their corresponding confidence scores.\n" +
                         "• Labels with confidence score lower than the minimal confidence score threshold will not be displayed.\n",
                 style = MaterialTheme.typography.bodySmall
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Object Detection ---
+            // Popis Object Detection modelu
+            Text("3. Object Detection", style = MaterialTheme.typography.titleMedium)
             Text(
-                text = "3. Object Detection",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text =  "• Detects and locates multiple objects within an image.\n" +
+                text = "• Detects and locates multiple objects within an image.\n" +
                         "• Returns bounding boxes for each detected object along with a table of coordinates of each object.\n",
                 style = MaterialTheme.typography.bodySmall
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Praktické tipy pro uživatele
             Text(
                 text = "Tip: \n" +
                         "• For most everyday tasks, we recommend using the On-Device models for faster and offline performance.\n" +
