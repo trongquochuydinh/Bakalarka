@@ -2,6 +2,7 @@ package cz.zcu.kiv.dinh.ml.processors
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Rect
 import android.net.Uri
 import android.provider.MediaStore
@@ -15,6 +16,7 @@ import cz.zcu.kiv.dinh.ml.utils.CloudVisionUtils
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Callback
@@ -22,13 +24,22 @@ import okhttp3.Response
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.util.concurrent.Executors
 
+/**
+ * Procesor pro detekci objektů (Object Detection).
+ * Vrací seznam objektů s názvem, důvěrou a souřadnicemi.
+ */
 class ObjectDetectionProcessor : BaseMLProcessor() {
-    override fun processImage(
-        context: Context,
-        imageUri: Uri,
-        onResult: (List<String>, Long) -> Unit
-    ) {
+
+    /**
+     * Zpracuje obrázek a vrátí detekované objekty.
+     *
+     * @param context Kontext aplikace
+     * @param imageUri URI obrázku
+     * @param onResult Callback s výsledky a dobou zpracování v ms
+     */
+    override fun processImage(context: Context, imageUri: Uri, onResult: (List<String>, Long) -> Unit) {
         if (ObjectDetectionConfig.useCloudModel) {
             processWithCloudVisionAPI(context, imageUri, onResult)
         } else {
@@ -37,39 +48,28 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
                 val options = ObjectDetectorOptions.Builder()
                     .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
                     .enableMultipleObjects()
-                    .enableClassification() // Enables labels (if available)
+                    .enableClassification()
                     .build()
-                val objectDetector = ObjectDetection.getClient(options)
+                val detector = ObjectDetection.getClient(options)
                 val startTime = System.currentTimeMillis()
-                objectDetector.process(image)
-                    .addOnSuccessListener { detectedObjects ->
-                        val endTime = System.currentTimeMillis()
-                        val processingTime = endTime - startTime
 
-                        val detectionResults = mutableListOf<String>()
-                        for (detectedObject in detectedObjects) {
-                            val boundingBox: Rect = detectedObject.boundingBox
-                            val label = if (detectedObject.labels.isNotEmpty()) {
-                                detectedObject.labels[0].text
-                            } else {
-                                "Unknown"
-                            }
-                            val confidence = if (detectedObject.labels.isNotEmpty()) {
-                                (detectedObject.labels[0].confidence * 100).toInt()
-                            } else {
-                                0
-                            }
-                            // Format: "Label (Confidence%) - Box: [left, top, right, bottom]"
+                detector.process(image)
+                    .addOnSuccessListener { objects ->
+                        val endTime = System.currentTimeMillis()
+                        val results = objects.mapNotNull { obj ->
+                            val box = obj.boundingBox
+                            val label = obj.labels.firstOrNull()?.text ?: "Unknown"
+                            val confidence = (obj.labels.firstOrNull()?.confidence ?: 0f) * 100
                             if (confidence >= ObjectDetectionConfig.minConfidencePercentage) {
-                                val resultString = "$label ($confidence%) - Box: [${boundingBox.left}, ${boundingBox.top}, ${boundingBox.right}, ${boundingBox.bottom}]"
-                                detectionResults.add(resultString)
-                            }
+                                "$label (${confidence.toInt()}%) - Box: [${box.left}, ${box.top}, ${box.right}, ${box.bottom}]"
+                            } else null
                         }
+
                         Toast.makeText(context, "Object detection completed", Toast.LENGTH_SHORT).show()
-                        onResult(detectionResults, processingTime)
+                        onResult(results, endTime - startTime)
                     }
-                    .addOnFailureListener { e ->
-                        Log.e("ObjectDetection", "Object detection failed", e)
+                    .addOnFailureListener {
+                        Log.e("ObjectDetection", "Object detection failed", it)
                         Toast.makeText(context, "Error during object detection", Toast.LENGTH_SHORT).show()
                         onResult(emptyList(), 0)
                     }
@@ -81,64 +81,26 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
         }
     }
 
-    override fun processWithCloudVisionAPI(
-        context: Context,
-        imageUri: Uri,
-        onResult: (List<String>, Long) -> Unit
-    ) {
-        try {
-            // Convert image to Base64 string
-            val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-            val width = bitmap.width
-            val height = bitmap.height
-
-            val outputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            val base64Image = Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
-
-            // Build request payload using CloudVisionUtils for OBJECT_LOCALIZATION
-            val jsonBody = CloudVisionUtils.createRequestPayload(base64Image, "OBJECT_LOCALIZATION")
-            val request: Request = CloudVisionUtils.buildRequest(jsonBody)
-
-            val client = OkHttpClient()
-            val startTime = System.currentTimeMillis()
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
-                    Log.e("CloudVision", "Request failed", e)
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(context, "Object detection (cloud) failed", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onResponse(call: okhttp3.Call, response: Response) {
-                    val endTime = System.currentTimeMillis()
-                    val processingTime = endTime - startTime
-
-                    val responseBody = response.body?.string() ?: ""
-                    try {
-                        val json = JSONObject(responseBody)
-                        val results = CloudVisionUtils.parseObjectLocalizationResponse(
-                            json,
-                            ObjectDetectionConfig.minConfidencePercentage,
-                            width,
-                            height
-                        )
-                        Handler(Looper.getMainLooper()).post {
-                            onResult(results, processingTime)
-                            Toast.makeText(context, "Object detection (cloud) completed", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Log.e("CloudVision", "Parsing failed", e)
-                        Handler(Looper.getMainLooper()).post {
-                            Toast.makeText(context, "Error processing response", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            })
-        } catch (e: Exception) {
-            Log.e("CloudVision", "Error converting image", e)
-            Toast.makeText(context, "Error processing image", Toast.LENGTH_SHORT).show()
-            onResult(emptyList(), 0)
+    /**
+     * Zpracuje obrázek přes Google Cloud Vision API s typem "OBJECT_LOCALIZATION".
+     *
+     * @param context Kontext aplikace
+     * @param imageUri URI obrázku
+     * @param onResult Callback s výsledky a dobou zpracování
+     */
+    override fun processWithCloudVisionAPI(context: Context, imageUri: Uri, onResult: (List<String>, Long) -> Unit) {
+        processCloudRequest(
+            context, imageUri,
+            featureType = "OBJECT_LOCALIZATION",
+            maxResults = 10,
+            onResult = onResult
+        ) { json, width, height ->
+            CloudVisionUtils.parseObjectLocalizationResponse(
+                json,
+                ObjectDetectionConfig.minConfidencePercentage,
+                width,
+                height
+            )
         }
     }
 }

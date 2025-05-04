@@ -28,7 +28,16 @@ import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 
-
+/**
+ * Hlavní Composable komponenta pro práci s kamerou a ML Kit modely.
+ * Umožňuje pořízení fotografie nebo výběr z galerie a následné spuštění detekce pomocí vybraného modelu.
+ *
+ * @param navController Navigace mezi obrazovkami.
+ * @param cameraExecutor Executor pro zajištění paralelního zpracování.
+ * @param selectedModel Aktuálně zvolený model pro detekci.
+ * @param onModelSelected Callback pro změnu modelu.
+ * @param hasCameraPermission Informace o oprávnění ke kameře.
+ */
 @Composable
 fun CameraScreen(
     navController: NavController,
@@ -56,7 +65,7 @@ fun CameraScreen(
         uri?.let {
             isProcessing = true
 
-            val normalizedUri = cameraManager.normalizeImage(context, it)  // 💡 přidáno
+            val normalizedUri = cameraManager.normalizeImage(context, it)
 
             val processorType = when (selectedModel) {
                 "Image Labeling" -> MLKitManager.ProcessorType.IMAGE_LABELING

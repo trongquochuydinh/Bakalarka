@@ -14,11 +14,21 @@ import cz.zcu.kiv.dinh.ml.configs.ImageLabelingConfig
 import cz.zcu.kiv.dinh.ml.configs.ObjectDetectionConfig
 import cz.zcu.kiv.dinh.ui.components.TopBarWithMenu
 
+/**
+ * Obrazovka pro nastavení modelů strojového učení.
+ * Uživatel zde může zvolit segmentaci textu, zvýraznit konkrétní slova/symboly
+ * a zapnout Cloud modely nebo nastavit minimální prahy důvěry pro Image Labeling a Object Detection.
+ *
+ * @param navController Navigace zpět
+ */
 @Composable
 fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
+    // Text Recognition: režim segmentace a zvýraznění
     var mode by remember { mutableStateOf(TextRecognitionConfig.segmentationMode) }
     var highlightWord by remember { mutableStateOf(TextRecognitionConfig.highlightWord ?: "") }
     var highlightSymbol by remember { mutableStateOf(TextRecognitionConfig.highlightSymbol?.toString() ?: "") }
+
+    // Cloud modely (zapnuto/vypnuto)
     var useCloudModelImageLabeling by remember { mutableStateOf(ImageLabelingConfig.useCloudModel) }
     var useCloudModelObjectDetection by remember { mutableStateOf(ObjectDetectionConfig.useCloudModel) }
     var useCloudModelTextRecognition by remember { mutableStateOf(TextRecognitionConfig.useCloudModel) }
@@ -32,13 +42,15 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+            // --- TEXT RECOGNITION ---
             HorizontalDivider(color = Color.DarkGray)
             Spacer(modifier = Modifier.height(16.dp))
 
             Text("Text Recognition Settings", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Segmentation Mode")
+            // Výběr režimu segmentace
+            Text("Segmentation Mode")
             var expanded by remember { mutableStateOf(false) }
             Box {
                 Text(
@@ -63,8 +75,7 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Textová pole pro zvýraznění (slovo / symbol)
             if (mode == "word") {
                 OutlinedTextField(
                     value = highlightWord,
@@ -90,14 +101,8 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            // Přepínač cloud modelu pro Text Recognition
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Use Cloud Model")
                 Switch(
                     checked = useCloudModelTextRecognition,
@@ -108,35 +113,28 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 )
             }
 
+            // --- IMAGE LABELING ---
             HorizontalDivider(color = Color.DarkGray)
             Spacer(modifier = Modifier.height(16.dp))
-
-
-
             Text("Image Labeling Settings", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Slider pro minimální důvěru
             var sliderImageLabelingValue by remember { mutableFloatStateOf(ImageLabelingConfig.minConfidencePercentage.toFloat()) }
-            Text(text = "Minimum Confidence: ${sliderImageLabelingValue.toInt()}%")
+            Text("Minimum Confidence: ${sliderImageLabelingValue.toInt()}%")
             Slider(
                 value = sliderImageLabelingValue,
-                onValueChange = { newValue ->
-                    sliderImageLabelingValue = newValue
-                    ImageLabelingConfig.minConfidencePercentage = newValue.toInt()
+                onValueChange = {
+                    sliderImageLabelingValue = it
+                    ImageLabelingConfig.minConfidencePercentage = it.toInt()
                 },
                 valueRange = 0f..100f,
                 steps = 99,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            // Přepínač cloud modelu
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Use Cloud Model")
                 Switch(
                     checked = useCloudModelImageLabeling,
@@ -147,32 +145,25 @@ fun ModelSettingsScreen(navController: androidx.navigation.NavController) {
                 )
             }
 
+            // --- OBJECT DETECTION ---
             HorizontalDivider(color = Color.DarkGray)
             Spacer(modifier = Modifier.height(16.dp))
-
             Text("Object Detection Settings", style = MaterialTheme.typography.titleMedium)
 
             var sliderObjectDetectionValue by remember { mutableFloatStateOf(ObjectDetectionConfig.minConfidencePercentage.toFloat()) }
-            Text(text = "Minimum Confidence: ${sliderObjectDetectionValue.toInt()}%")
+            Text("Minimum Confidence: ${sliderObjectDetectionValue.toInt()}%")
             Slider(
                 value = sliderObjectDetectionValue,
-                onValueChange = { newValue ->
-                    sliderObjectDetectionValue = newValue
-                    ObjectDetectionConfig.minConfidencePercentage = newValue.toInt()
+                onValueChange = {
+                    sliderObjectDetectionValue = it
+                    ObjectDetectionConfig.minConfidencePercentage = it.toInt()
                 },
                 valueRange = 0f..100f,
                 steps = 99,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Use Cloud Model")
                 Switch(
                     checked = useCloudModelObjectDetection,

@@ -29,6 +29,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import cz.zcu.kiv.dinh.ui.components.TopBarWithMenu
 
+/**
+ * Obrazovka pro vizuální nastavení aplikace.
+ * Umožňuje přepínání mezi světlým a tmavým režimem pomocí komponenty ThemeSwitcher.
+ *
+ * @param navController Navigace zpět
+ * @param isDarkTheme Aktuální režim (true = tmavý)
+ * @param onThemeChange Funkce volaná při změně tématu
+ */
 @Composable
 fun VisualSettingsScreen(
     navController: NavController,
@@ -51,8 +59,7 @@ fun VisualSettingsScreen(
             Text(
                 text = "Theme",
                 fontSize = 20.sp,
-                modifier = Modifier
-                    .padding(start = 16.dp, top = 12.dp)
+                modifier = Modifier.padding(start = 16.dp, top = 12.dp)
             )
 
             ThemeSwitcher(isDarkTheme, onThemeChange)
@@ -60,6 +67,13 @@ fun VisualSettingsScreen(
     }
 }
 
+/**
+ * Přepínač pro změnu vizuálního režimu (tmavý/světlý).
+ * Používá ikony slunce a měsíce a vizuální zvýraznění vybraného režimu.
+ *
+ * @param isDarkTheme Aktuální režim
+ * @param onThemeChange Funkce zavolaná při přepnutí tématu
+ */
 @Composable
 fun ThemeSwitcher(
     isDarkTheme: Boolean,
@@ -72,6 +86,7 @@ fun ThemeSwitcher(
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Tlačítko pro aktivaci tmavého režimu
         IconButton(
             onClick = { onThemeChange(true) },
             modifier = Modifier
@@ -79,19 +94,20 @@ fun ThemeSwitcher(
                 .background(if (isDarkTheme) Color.DarkGray else Color.Transparent, shape = CircleShape)
         ) {
             Icon(
-                imageVector = Icons.Default.DarkMode, // 🌙
+                imageVector = Icons.Default.DarkMode,
                 contentDescription = "Dark Mode",
                 tint = if (isDarkTheme) Color.White else Color.Black
             )
         }
 
         Icon(
-            imageVector = Icons.Default.SwapHoriz, // ↔
+            imageVector = Icons.Default.SwapHoriz,
             contentDescription = "Switch",
             tint = Color.Black,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
 
+        // Tlačítko pro aktivaci světlého režimu
         IconButton(
             onClick = { onThemeChange(false) },
             modifier = Modifier
@@ -99,12 +115,10 @@ fun ThemeSwitcher(
                 .background(if (!isDarkTheme) Color.DarkGray else Color.Transparent, shape = CircleShape)
         ) {
             Icon(
-                imageVector = Icons.Default.LightMode, // ☀
+                imageVector = Icons.Default.LightMode,
                 contentDescription = "Light Mode",
                 tint = if (!isDarkTheme) Color.White else Color.Black
             )
         }
     }
 }
-
-
