@@ -9,5 +9,5 @@ object ObjectDetectionConfig {
     var useCloudModel: Boolean = false
 
     /** Minimální důvěra v procentech, pod kterou se detekované objekty ignorují */
-    var minConfidencePercentage: Int = 30
+    var minConfidencePercentage: Int = 0
 }

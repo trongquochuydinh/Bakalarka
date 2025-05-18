@@ -56,13 +56,19 @@ class ObjectDetectionProcessor : BaseMLProcessor() {
                 detector.process(image)
                     .addOnSuccessListener { objects ->
                         val endTime = System.currentTimeMillis()
-                        val results = objects.mapNotNull { obj ->
+                        val results = mutableListOf<String>()
+
+                        Log.d("ObjectDetection", "Detected ${objects.size} objects.")
+                        objects.forEachIndexed { index, obj ->
                             val box = obj.boundingBox
                             val label = obj.labels.firstOrNull()?.text ?: "Unknown"
                             val confidence = (obj.labels.firstOrNull()?.confidence ?: 0f) * 100
+
+                            Log.d("ObjectDetection", "Object #$index -> Label: $label, Confidence: ${"%.2f".format(confidence)}%, Box: [${box.left}, ${box.top}, ${box.right}, ${box.bottom}]")
+
                             if (confidence >= ObjectDetectionConfig.minConfidencePercentage) {
-                                "$label (${confidence.toInt()}%) - Box: [${box.left}, ${box.top}, ${box.right}, ${box.bottom}]"
-                            } else null
+                                results.add("$label (${confidence.toInt()}%) - Box: [${box.left}, ${box.top}, ${box.right}, ${box.bottom}]")
+                            }
                         }
 
                         Toast.makeText(context, "Object detection completed", Toast.LENGTH_SHORT).show()

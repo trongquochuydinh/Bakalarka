@@ -27,6 +27,9 @@ import android.content.Intent
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 /**
  * Hlavní Composable komponenta pro práci s kamerou a ML Kit modely.
@@ -50,11 +53,23 @@ fun CameraScreen(
     val cameraManager = remember { CameraManager(context) }
     var isProcessing by remember { mutableStateOf(false) }
 
-    DisposableEffect(Unit) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
+                cameraManager.stopCamera()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
         onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
             cameraManager.stopCamera()
         }
     }
+
 
     val mlKitManager = remember { MLKitManager() }
     val models = listOf("Image Labeling", "Text Recognition", "Object Detection")
